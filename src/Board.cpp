@@ -21,13 +21,28 @@ pointType Board::get_point(int x, int y)
     return board[coords_to_idx(x, y)];
 }
 
+pointType Board::get_point(int idx)
+{
+    return board[idx];
+}
+
 void Board::set_point(int x, int y, pointType value)
 {
+    board[coords_to_idx(x, y)] = value;
 }
 
 int Board::get_liberties(int x, int y)
 {
-    return 0;
+    int num_liberties = 0;
+    int idx = coords_to_idx(x, y);
+    for (int i = 0; i < 4; i++)
+    {
+        if (idx + directions[i] == pointType::EMPTY)
+        {
+            num_liberties++;
+        }
+    }
+    return num_liberties;
 }
 
 bool Board::is_starpoint(int x, int y)
@@ -64,15 +79,53 @@ void Board::print_board()
 
 nbrs Board::get_nbrs(int x, int y)
 {
-    return nbrs();
+    nbrs n;
+    int num_edges;
+    int num_libs;
+    int num_black;
+    int num_white;
+
+    int idx = coords_to_idx(x, y);
+
+    for (int i = 0; i < 4; i++)
+    {
+        switch (board[idx + directions[i]])
+        {
+        case pointType::BLANK:
+            num_edges++;
+            n.edges |= (1 << i);
+            break;
+        case pointType::EMPTY:
+            num_libs++;
+            n.liberties |= (1 << i);
+            break;
+        case pointType::BLACK:
+            num_black++;
+            n.black |= (1 << i);
+            break;
+        case pointType::WHITE:
+            num_white++;
+            n.white |= (1 << i);
+            break;
+        }
+    }
+
+    n.edges |= (num_edges << 4);
+    n.liberties |= (num_libs << 4);
+    n.black |= (num_black << 4);
+    n.white |= (num_white << 4);
+    return n;
 }
 
 int Board::coords_to_idx(int x, int y)
 {
+    assert(x <= 0 && x > boardsize);
+    assert(y <= 0 && y > boardsize);
     return (boardsize + 2) * (y + 1) + x + 1;
 }
 
 std::pair<int, int> Board::idx_to_coords(int idx)
 {
+    assert(idx >= 0 && idx < board.size());
     return std::pair<int, int>(idx / (boardsize + 2) - 1, idx % (boardsize + 2) - 1);
 }

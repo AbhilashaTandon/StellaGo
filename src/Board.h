@@ -13,34 +13,37 @@ enum pointType
     WHITE = 3
 };
 
+#define NORTH 1
+#define EAST (1 << 1)  // 2
+#define SOUTH (1 << 2) // 4
+#define WEST (1 << 3)  // 8
+#define COUNT (3 << 4) // 48?
+
 struct nbrs
 {
-    int num_edges;
-    int num_liberties;
-    int num_black_nbrs;
-    int num_white_nbrs;
     uint8_t edges;
     uint8_t liberties;
-    uint8_t black_nbrs; // NESW, bit is a 1 if that direction has a neighbor of the given type
-    uint8_t white_nbrs;
+    uint8_t black;
+    uint8_t white;
 };
 
 class Board
 {
 
 public:
-    Board(int board_size);
+    Board(int boardsize);
     pointType get_point(int x, int y);
+    pointType get_point(int idx);
     void set_point(int x, int y, pointType value);
     int get_liberties(int x, int y);
     bool is_starpoint(int x, int y);
     void print_board();
     nbrs get_nbrs(int x, int y);
     const int directions[4] = {-boardsize - 2, -1, boardsize + 2, 1};
-
-private:
     int coords_to_idx(int x, int y);
     std::pair<int, int> idx_to_coords(int idx);
+
+private:
     std::vector<pointType> board;
     int boardsize;
 };
