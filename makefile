@@ -30,8 +30,9 @@ INC_FLAGS := $(addprefix -I,$(INC_DIRS))
 CPPFLAGS := $(INC_FLAGS) -MMD -MP
 COMMON_FLAGS = -std=c++14 -Wall -Wextra -Wpedantic  -Wconversion -Wdouble-promotion  -Wno-unused-parameter -Wno-unused-function -Wno-sign-conversion -fsanitize=address -fsanitize=undefined -fsanitize-trap
 CXXFLAGS := -O2 $(COMMON_FLAGS) 
-debug: CXXFLAGS = -g3 -Og $(COMMON_FLAGS)
+debug: CXXFLAGS = -g3 -O0 $(COMMON_FLAGS)
 LDFLAGS := -lasan
+debug: LDFLAGS := ""
      
 
 # The final build step.
