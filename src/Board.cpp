@@ -67,10 +67,10 @@ void Board::print_board()
                 std::cout << "  ";
                 break;
             case pointType::BLACK:
-                std::cout << "O ";
+                std::cout << "B ";
                 break;
             case pointType::WHITE:
-                std::cout << "X ";
+                std::cout << "W ";
                 break;
             }
         }
@@ -82,6 +82,10 @@ void Board::print_board()
 nbrs Board::get_nbrs(int x, int y)
 {
     nbrs n;
+    n.edges = 0;
+    n.liberties = 0;
+    n.black = 0;
+    n.white = 0;
     uint8_t num_edges = 0;
     uint8_t num_libs = 0;
     uint8_t num_black = 0;
@@ -111,6 +115,8 @@ nbrs Board::get_nbrs(int x, int y)
             break;
         }
     }
+
+    assert((num_edges + num_libs + num_black + num_white) == 4);
 
     n.edges |= uint8_t(num_edges << 4);
     n.liberties |= uint8_t(num_libs << 4);

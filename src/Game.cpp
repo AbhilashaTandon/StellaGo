@@ -15,7 +15,7 @@ Game::Game(int board_size) : b(board_size)
 
 bool Game::make_play(int x, int y)
 {
-    bool color_to_move = (play_count & 1) == 0;
+    bool color_to_move = whose_turn();
 
     if (check_play(x, y))
     {
@@ -29,7 +29,7 @@ bool Game::make_play(int x, int y)
 
 bool Game::whose_turn()
 {
-    return play_count & 1;
+    return (play_count & 1) == 0;
 }
 
 int Game::get_play_count()
@@ -76,7 +76,6 @@ void Game::check_for_errors()
 
 void Game::print_board()
 {
-    printf("Play Count %d, %s to move\n\n", play_count - 1, ((play_count & 1) == 0) ? "black" : "white");
 
     b.print_board();
 
@@ -132,11 +131,13 @@ void Game::print_board()
         std::cout << std::endl;
     }
     std::cout << std::endl;
+
+    printf("Play Count %d, %s to move\n----------------\n", play_count, whose_turn() ? "black" : "white");
 }
 
 bool Game::check_play(int x, int y)
 {
-    bool color_to_move = (play_count & 1) == 0;
+    bool color_to_move = whose_turn();
 
     struct nbrs neighbors = b.get_nbrs(x, y);
 
@@ -145,8 +146,12 @@ bool Game::check_play(int x, int y)
         return false;
     }
 
+    // printf("%d %d ", x, y);
+    // printf("%d %d %d %d\n", (neighbors.liberties & COUNT) >> 4, (neighbors.black & COUNT) >> 4, (neighbors.white & COUNT) >> 4, (neighbors.edges & COUNT) >> 4);
+
     if ((neighbors.liberties & COUNT) == 0)
     {
+
         // check if move is suicide
         // if all neighboring opposite color chains have at least 2 liberties (one for stone to be added and another one for safety, they cant be captured)
         //
@@ -167,6 +172,7 @@ bool Game::check_play(int x, int y)
             { // same color chain
                 if (chain_liberties[chain_id] > 1)
                 {
+                    // printf("extension to alive chain");
                     return true;
                 }
             }
@@ -175,6 +181,7 @@ bool Game::check_play(int x, int y)
             {
                 if (chain_liberties[chain_id] < 2)
                 {
+                    // printf("capture of dead chain");
                     return true;
                 }
             }
@@ -183,6 +190,7 @@ bool Game::check_play(int x, int y)
         return false;
     }
 
+    // printf("has liberty");
     return true;
 }
 
@@ -263,15 +271,36 @@ void Game::update_chains(int x, int y)
 {
     struct nbrs n = b.get_nbrs(x, y);
 
-    bool side = (play_count & 1) == 0;
+    bool side = whose_turn();
+
+    // printf("\n\n%d\n\n", side);
 
     int num_same_color = ((side ? n.black : n.white) & COUNT) >> 4;
 
+    // printf("\n\nBLACK: %x\tWHITE: %x\tEDGE: %x\tLIB: %x\n\n", n.black, n.white, n.edges, n.liberties);
+
+    // printf("%d", (side ? n.black : n.white) & COUNT);
+
+    // printf("%x %x", n.black, n.white);
+
     std::vector<int> neighboring_chains = get_neighboring_chains(x, y);
+
+    for (int chain_id : neighboring_chains)
+    {
+        if (side != (chain_id > 0)) // diff color chain
+        {
+            chain_liberties[chain_id]--;
+            if (chain_liberties[chain_id] == 0)
+            {
+                capture_chain(chain_id);
+            }
+        }
+    }
 
     if (num_same_color == 0)
     {
         // new chain
+        // printf("new chain");
         create_chain(x, y, side);
     }
 
@@ -283,6 +312,7 @@ void Game::update_chains(int x, int y)
 
             if (side == (chain_id > 0))
             {
+                // printf("extension");
                 extend_chain(x, y, chain_id);
                 break;
             }
@@ -292,6 +322,8 @@ void Game::update_chains(int x, int y)
     else
     {
         // merger or extension
+
+        // printf("merger or extension");
 
         std::vector<int> same_color_chains = std::vector<int>();
 
@@ -307,24 +339,13 @@ void Game::update_chains(int x, int y)
 
         if (same_color_chains.size() == 1)
         {
+            // printf("extension");
             extend_chain(x, y, same_color_chains[0]);
         }
         else if (same_color_chains.size() > 1)
         {
+            // printf("merger");
             merge_chains(same_color_chains, x, y);
-        }
-    }
-
-    for (int chain_id : neighboring_chains)
-    {
-        if (side != (chain_id > 0))
-        {
-            // diff color chain
-            chain_liberties[chain_id]--;
-            if (chain_liberties[chain_id] == 0)
-            {
-                capture_chain(chain_id);
-            }
         }
     }
 }
@@ -385,15 +406,9 @@ void Game::merge_chains(std::vector<int> chain_ids, int x, int y)
         else if (b.get_point(i) == pointType::EMPTY && i != board_pos)
         // if its empty
         {
-            for (int x : chain_ids)
+            if (is_liberty_of_chain(chain_ids, i, board_pos))
             {
-                if (chain_is_neighbor(i, x, 0))
-                // and borders our new merged chain
-                {
-                    new_libs++;
-                    // add a liberty
-                    break;
-                }
+                new_libs++;
             }
         }
     }
@@ -405,6 +420,30 @@ void Game::merge_chains(std::vector<int> chain_ids, int x, int y)
 
     chains[board_pos] = new_chain_id;
     chain_liberties[new_chain_id] = new_libs;
+}
+
+bool Game::is_liberty_of_chain(std::vector<int> &chain_ids, int i, int board_pos)
+{
+    for (int x : chain_ids)
+    {
+
+        if (chain_is_neighbor(i, x, 0))
+        // and borders our new merged chain
+        {
+            return true;
+        }
+    }
+
+    for (int d = 0; d < 4; d++)
+    // or borders the linking stone
+    {
+        if (i == (board_pos + b.directions[d]))
+        {
+
+            return true;
+        }
+    }
+    return false;
 }
 
 void Game::capture_chain(int chain_id)

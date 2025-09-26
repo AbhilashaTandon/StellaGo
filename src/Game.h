@@ -23,6 +23,7 @@ private:
     void create_chain(int x, int y, bool color);
     void extend_chain(int x, int y, int chain_id);
     void merge_chains(std::vector<int> chain_ids, int x, int y);
+    bool is_liberty_of_chain(std::vector<int> &chain_ids, int i, int board_pos);
     void capture_chain(int chain_id);
     int chain_is_neighbor(int idx, int chain_id, int excluded_point); // if chain neighbors point
     std::pair<int, int> ko;

@@ -13,11 +13,11 @@ enum pointType
     WHITE = 3
 };
 
-#define NORTH 1
-#define EAST (1 << 1)  // 2
-#define SOUTH (1 << 2) // 4
-#define WEST (1 << 3)  // 8
-#define COUNT (3 << 4) // 48?
+#define NORTH 1        // 00000001
+#define EAST (1 << 1)  // 00000010
+#define SOUTH (1 << 2) // 00000100
+#define WEST (1 << 3)  // 00001000
+#define COUNT (7 << 4) // 01110000
 
 struct nbrs
 {

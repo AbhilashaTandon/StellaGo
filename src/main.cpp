@@ -3,11 +3,11 @@
 #include <cstdio>
 #include <random>
 
-#define BOARDSIZE 5
+#define BOARDSIZE 19
 
 int main()
 {
-    srand(0);
+    srand(2);
 
     Game g = Game(BOARDSIZE);
 
