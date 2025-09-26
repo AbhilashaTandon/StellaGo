@@ -36,11 +36,11 @@ public:
     pointType get_point(int idx);
     void set_point(int x, int y, pointType value);
     int get_liberties(int x, int y);
-    bool is_starpoint(int x, int y);
+    // bool is_starpoint(int x, int y);
     void print_board();
     nbrs get_nbrs(int x, int y);
-    const int directions[4] = {-boardsize - 2, -1, boardsize + 2, 1};
     int coords_to_idx(int x, int y);
+    std::vector<int> directions;
     std::pair<int, int> idx_to_coords(int idx);
 
 private:

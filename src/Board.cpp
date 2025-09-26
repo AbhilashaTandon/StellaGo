@@ -1,7 +1,7 @@
 #include <iostream>
 #include "Board.h"
 
-Board::Board(int board_size)
+Board::Board(int board_size) : boardsize(board_size)
 {
     this->boardsize = board_size;
     this->board = std::vector<pointType>((board_size + 2) * (board_size + 2), pointType::EMPTY);
@@ -14,6 +14,8 @@ Board::Board(int board_size)
         board[(board_size + 1) * (board_size + 2) + i] = pointType::BLANK;
         board[(i + 1) * (board_size + 2) + (board_size + 1)] = pointType::BLANK;
     }
+
+    this->directions = {-boardsize - 2, -1, boardsize + 2, 1};
 }
 
 pointType Board::get_point(int x, int y)
@@ -43,11 +45,6 @@ int Board::get_liberties(int x, int y)
         }
     }
     return num_liberties;
-}
-
-bool Board::is_starpoint(int x, int y)
-{
-    return false;
 }
 
 void Board::print_board()
@@ -80,10 +77,10 @@ void Board::print_board()
 nbrs Board::get_nbrs(int x, int y)
 {
     nbrs n;
-    int num_edges;
-    int num_libs;
-    int num_black;
-    int num_white;
+    int num_edges = 0;
+    int num_libs = 0;
+    int num_black = 0;
+    int num_white = 0;
 
     int idx = coords_to_idx(x, y);
 
@@ -119,13 +116,13 @@ nbrs Board::get_nbrs(int x, int y)
 
 int Board::coords_to_idx(int x, int y)
 {
-    assert(x <= 0 && x > boardsize);
-    assert(y <= 0 && y > boardsize);
+    assert(x >= 0 && x < boardsize);
+    assert(y >= 0 && y < boardsize);
     return (boardsize + 2) * (y + 1) + x + 1;
 }
 
 std::pair<int, int> Board::idx_to_coords(int idx)
 {
-    assert(idx >= 0 && idx < board.size());
+    assert(idx >= 0 && (unsigned int)idx < board.size());
     return std::pair<int, int>(idx / (boardsize + 2) - 1, idx % (boardsize + 2) - 1);
 }
