@@ -8,10 +8,11 @@
 class Game
 {
 public:
-    Game(int board_size);
+    Game(int boardsize);
     bool make_play(int x, int y);
     bool whose_turn();
     int get_play_count();
+    void print_board();
 
 private:
     Board b;
@@ -20,11 +21,16 @@ private:
     std::unordered_map<int, int> chain_liberties;
     void create_chain(int x, int y, bool color);
     void extend_chain(int x, int y, int chain_id);
-    void merge_chains(int chain_id_1, int chain_id_2);
+    void merge_chains(std::vector<int> chain_ids, int x, int y);
     void capture_chain(int chain_id);
+    int chain_is_neighbor(int idx, int chain_id, int excluded_point); // if chain neighbors point
     std::pair<int, int> ko;
     int play_count;
-    int chain_count;
+    int black_chain_ctr;
+    int white_chain_ctr;
+    int boardsize;
+    std::vector<int> get_neighboring_chains(int x, int y);
+    void update_chains(int x, int y);
 };
 
 #endif
