@@ -27,7 +27,9 @@ INC_FLAGS := $(addprefix -I,$(INC_DIRS))
 
 # The -MMD and -MP flags together generate Makefiles for us!
 # These files will have .d instead of .o as the output.
-CPPFLAGS := $(INC_FLAGS) -MMD -MP -g -O2 -Wall -Wextra -Wpedantic
+CPPFLAGS := $(INC_FLAGS) -MMD -MP
+CXXFLAGS := -O2
+debug: CXXFLAGS = -Wall -Wextra -Wpedantic -g -O0
 
 # The final build step.
 $(BUILD_DIR)/$(TARGET_EXEC): $(OBJS)
@@ -55,3 +57,7 @@ clean:
 
 run: $(BUILD_DIR)/$(TARGET_EXEC)
 	./$(BUILD_DIR)/$(TARGET_EXEC)
+
+debug: $(BUILD_DIR)/$(TARGET_EXEC)
+	./$(BUILD_DIR)/$(TARGET_EXEC) 
+
