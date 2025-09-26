@@ -35,6 +35,7 @@ public:
     pointType get_point(int x, int y);
     pointType get_point(int idx);
     void set_point(int x, int y, pointType value);
+    void set_point(int idx, pointType value);
     int get_liberties(int x, int y);
     // bool is_starpoint(int x, int y);
     void print_board();

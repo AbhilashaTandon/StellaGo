@@ -33,6 +33,11 @@ void Board::set_point(int x, int y, pointType value)
     board[coords_to_idx(x, y)] = value;
 }
 
+void Board::set_point(int idx, pointType value)
+{
+    board[idx] = value;
+}
+
 int Board::get_liberties(int x, int y)
 {
     int num_liberties = 0;
