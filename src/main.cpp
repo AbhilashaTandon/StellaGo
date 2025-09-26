@@ -1,16 +1,32 @@
 #include "Board.h"
 #include "Game.h"
+#include <cstdio>
+#include <random>
+
+#define BOARDSIZE 5
 
 int main()
 {
-    Game g = Game(19);
+    srand(0);
 
-    std::vector<std::pair<int, int>> moves = {std::pair(3, 3), std::pair(3, 3)};
+    Game g = Game(BOARDSIZE);
 
-    for (std::pair<int, int> coord : moves)
+    // std::vector<std::pair<int, int>> moves = {std::pair(3, 3), std::pair(3, 3), std::pair(3, 1), std::pair(3, 2), std::pair(1, 2), std::pair(3, 1), std::pair(0, 3)};
+
+    // for (std::pair<int, int> coord : moves)
+    // {
+    //     if (g.make_play(coord.first, coord.second))
+    //     {
+    //         g.print_board();
+    //     }
+    // }
+
+    for (int i = 0; i < 100; i++)
     {
-        g.make_play(coord.first, coord.second);
-        g.print_board();
+        if (g.make_play(rand() % BOARDSIZE, rand() % BOARDSIZE))
+        {
+            g.print_board();
+        }
     }
 
     return 0;

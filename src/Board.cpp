@@ -39,7 +39,7 @@ int Board::get_liberties(int x, int y)
     int idx = coords_to_idx(x, y);
     for (int i = 0; i < 4; i++)
     {
-        if (idx + directions[i] == pointType::EMPTY)
+        if (board[idx + directions[i]] == pointType::EMPTY)
         {
             num_liberties++;
         }
@@ -77,40 +77,40 @@ void Board::print_board()
 nbrs Board::get_nbrs(int x, int y)
 {
     nbrs n;
-    int num_edges = 0;
-    int num_libs = 0;
-    int num_black = 0;
-    int num_white = 0;
+    uint8_t num_edges = 0;
+    uint8_t num_libs = 0;
+    uint8_t num_black = 0;
+    uint8_t num_white = 0;
 
     int idx = coords_to_idx(x, y);
 
-    for (int i = 0; i < 4; i++)
+    for (uint8_t i = 0; i < 4; i++)
     {
         switch (board[idx + directions[i]])
         {
         case pointType::BLANK:
             num_edges++;
-            n.edges |= (1 << i);
+            n.edges |= uint8_t(1 << i);
             break;
         case pointType::EMPTY:
             num_libs++;
-            n.liberties |= (1 << i);
+            n.liberties |= uint8_t(1 << i);
             break;
         case pointType::BLACK:
             num_black++;
-            n.black |= (1 << i);
+            n.black |= uint8_t(1 << i);
             break;
         case pointType::WHITE:
             num_white++;
-            n.white |= (1 << i);
+            n.white |= uint8_t(1 << i);
             break;
         }
     }
 
-    n.edges |= (num_edges << 4);
-    n.liberties |= (num_libs << 4);
-    n.black |= (num_black << 4);
-    n.white |= (num_white << 4);
+    n.edges |= uint8_t(num_edges << 4);
+    n.liberties |= uint8_t(num_libs << 4);
+    n.black |= uint8_t(num_black << 4);
+    n.white |= uint8_t(num_white << 4);
     return n;
 }
 
