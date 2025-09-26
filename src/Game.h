@@ -13,6 +13,7 @@ public:
     bool whose_turn();
     int get_play_count();
     void print_board();
+    void check_for_errors();
 
 private:
     Board b;
@@ -30,6 +31,7 @@ private:
     int white_chain_ctr;
     int boardsize;
     std::vector<int> get_neighboring_chains(int x, int y);
+    std::vector<int> get_neighboring_chains(int board_pos);
     void update_chains(int x, int y);
 };
 
