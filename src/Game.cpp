@@ -114,7 +114,7 @@ void Game::print_board()
             switch (b.get_point(i * (boardsize + 2) + j))
             {
             case pointType::BLANK:
-                std::cout << "  #";
+                std::cout << " # ";
                 break;
             case pointType::EMPTY:
                 std::cout << "   ";
@@ -140,14 +140,14 @@ void Game::print_board()
             switch (b.get_point(i * (boardsize + 2) + j))
             {
             case pointType::BLANK:
-                std::cout << "# ";
+                std::cout << " # ";
                 break;
             case pointType::EMPTY:
-                std::cout << "  ";
+                std::cout << "   ";
                 break;
             case pointType::BLACK:
             case pointType::WHITE:
-                printf("%d ", chain_liberties[chains[board_pos]]);
+                printf("%3d", chain_liberties[chains[board_pos]]);
                 break;
             }
         }
