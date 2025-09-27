@@ -103,61 +103,61 @@ void Game::print_board()
     b.print_board();
 
     std::cout << std::endl;
-    // std::cout << "Chain Indices" << std::endl;
+    std::cout << "Chain Indices" << std::endl;
 
-    // for (int i = 0; i < (boardsize + 2); i++)
-    // {
-    //     for (int j = 0; j < (boardsize + 2); j++)
-    //     {
-    //         int board_pos = i * (boardsize + 2) + j;
-    //         switch (b.get_point(i * (boardsize + 2) + j))
-    //         {
-    //         case pointType::BLANK:
-    //             std::cout << "  #";
-    //             break;
-    //         case pointType::EMPTY:
-    //             std::cout << "   ";
-    //             break;
-    //         case pointType::BLACK:
-    //         case pointType::WHITE:
-    //             printf("%3d", chains[board_pos]);
-    //             break;
-    //         }
-    //     }
+    for (int i = 0; i < (boardsize + 2); i++)
+    {
+        for (int j = 0; j < (boardsize + 2); j++)
+        {
+            int board_pos = i * (boardsize + 2) + j;
+            switch (b.get_point(i * (boardsize + 2) + j))
+            {
+            case pointType::BLANK:
+                std::cout << "  #";
+                break;
+            case pointType::EMPTY:
+                std::cout << "   ";
+                break;
+            case pointType::BLACK:
+            case pointType::WHITE:
+                printf("%3d", chains[board_pos]);
+                break;
+            }
+        }
 
-    //     std::cout << std::endl;
-    // }
+        std::cout << std::endl;
+    }
 
-    // std::cout << std::endl;
-    // std::cout << "Chain Liberties" << std::endl;
+    std::cout << std::endl;
+    std::cout << "Chain Liberties" << std::endl;
 
-    // for (int i = 0; i < (boardsize + 2); i++)
-    // {
-    //     for (int j = 0; j < (boardsize + 2); j++)
-    //     {
-    //         int board_pos = i * (boardsize + 2) + j;
-    //         switch (b.get_point(i * (boardsize + 2) + j))
-    //         {
-    //         case pointType::BLANK:
-    //             std::cout << "# ";
-    //             break;
-    //         case pointType::EMPTY:
-    //             std::cout << "  ";
-    //             break;
-    //         case pointType::BLACK:
-    //         case pointType::WHITE:
-    //             printf("%d ", chain_liberties[chains[board_pos]]);
-    //             break;
-    //         }
-    //     }
+    for (int i = 0; i < (boardsize + 2); i++)
+    {
+        for (int j = 0; j < (boardsize + 2); j++)
+        {
+            int board_pos = i * (boardsize + 2) + j;
+            switch (b.get_point(i * (boardsize + 2) + j))
+            {
+            case pointType::BLANK:
+                std::cout << "# ";
+                break;
+            case pointType::EMPTY:
+                std::cout << "  ";
+                break;
+            case pointType::BLACK:
+            case pointType::WHITE:
+                printf("%d ", chain_liberties[chains[board_pos]]);
+                break;
+            }
+        }
 
-    //     std::cout << std::endl;
-    // }
-    // std::cout << std::endl;
+        std::cout << std::endl;
+    }
+    std::cout << std::endl;
 
-    // printf("Board hash: %lx\n", b.get_hash());
-    // printf("Black ko hash: %lx\n", black_ko_hash);
-    // printf("White ko hash: %lx\n", white_ko_hash);
+    printf("Board hash: %lx\n", b.get_hash());
+    printf("Black ko hash: %lx\n", black_ko_hash);
+    printf("White ko hash: %lx\n", white_ko_hash);
 
     printf("Play Count %d, %s to move\n----------------\n", play_count, whose_turn() ? "black" : "white");
 }
@@ -289,6 +289,30 @@ int Game::chain_is_neighbor(int board_pos, int chain_id, int excluded_point)
     return false;
 }
 
+int Game::chain_is_neighbor(int board_pos, int chain_id, int excluded_point, int merge_point)
+{
+    // for each liberty
+    for (int j = 0; j < 4; j++)
+    {
+        int nbr_of_lib = (board_pos + b.directions[j]);
+        if (nbr_of_lib == excluded_point)
+        {
+            continue;
+        }
+
+        if (nbr_of_lib == merge_point)
+        {
+            return true;
+        }
+
+        if (chains[nbr_of_lib] == chain_id)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
 std::vector<int> Game::get_neighboring_chains(int x, int y)
 {
     int board_pos = b.coords_to_idx(x, y);
@@ -404,9 +428,13 @@ void Game::update_chains(int x, int y)
             // printf("extension");
             extend_chain(x, y, same_color_chains[0]);
         }
-        else if (same_color_chains.size() > 1)
+        else if (same_color_chains.size() == 2)
         {
             // printf("merger");
+            merge_two_chains(same_color_chains[0], same_color_chains[1], x, y);
+        }
+        else if (same_color_chains.size() > 2)
+        {
             merge_chains(same_color_chains, x, y);
         }
     }
@@ -459,22 +487,43 @@ void Game::merge_chains(std::vector<int> chain_ids, int x, int y)
     int board_pos = b.coords_to_idx(x, y);
 
     int new_chain_id = *std::min_element(chain_ids.begin(), chain_ids.end());
-    int new_libs = 0;
 
-    for (int i = 0; i < (boardsize + 2) * (boardsize + 2); i++)
+    // update chain ids
+    for (int i = 0; i < boardsize; i++)
     {
-        // for every point on the board
-        if (std::find(chain_ids.begin(), chain_ids.end(), chains[i]) != chain_ids.end())
+        for (int j = 0; j < boardsize; j++)
         {
-            chains[i] = new_chain_id;
-            // update the board_pos of the chains
-        }
-        else if (b.get_point(i) == pointType::EMPTY && i != board_pos)
-        // if its empty
-        {
-            if (is_liberty_of_chain(chain_ids, i, board_pos))
+            int idx = b.coords_to_idx(i, j);
+            // for every point on the board
+            if (b.get_point(idx) != pointType::EMPTY)
             {
-                new_libs++;
+                if (std::find(chain_ids.begin(), chain_ids.end(), chains[idx]) != chain_ids.end())
+                {
+                    chains[idx] = new_chain_id;
+                    // update the board_pos of the chains
+                }
+            }
+        }
+    }
+
+    // calculate num_liberties
+    int new_libs = 0;
+    for (int i = 0; i < boardsize; i++)
+    {
+        for (int j = 0; j < boardsize; j++)
+        {
+            int idx = b.coords_to_idx(i, j);
+            if (idx == board_pos)
+            {
+                continue;
+            }
+            if (b.get_point(idx) == pointType::EMPTY)
+            {
+                if (chain_is_neighbor(idx, new_chain_id, 0, board_pos))
+                {
+                    // printf("\n%d %d\n", i, j);
+                    new_libs++;
+                }
             }
         }
     }
@@ -488,11 +537,72 @@ void Game::merge_chains(std::vector<int> chain_ids, int x, int y)
     chain_liberties[new_chain_id] = new_libs;
 }
 
+void Game::merge_two_chains(int chain_id_1, int chain_id_2, int x, int y)
+{
+#if DEBUG
+    assert(chains[b.coords_to_idx(x, y)] == 0);
+    // merge point must be currently empty for a new stone to be placed there
+    assert(chain_id_1 != chain_id_2);
+    // no double ups
+    assert((chain_id_1 < 0) == ((chain_id_2) < 0));
+    // chains must be same color
+#endif
+
+    int board_pos = b.coords_to_idx(x, y);
+
+    int new_chain_id = (chain_id_1 < chain_id_2) ? chain_id_1 : chain_id_2;
+
+    // update chain ids
+    for (int i = 0; i < boardsize; i++)
+    {
+        for (int j = 0; j < boardsize; j++)
+        {
+            int idx = b.coords_to_idx(i, j);
+            // for every point on the board
+            if (b.get_point(idx) != pointType::EMPTY)
+            {
+                if (chains[idx] == chain_id_1 || chains[idx] == chain_id_2)
+                {
+                    chains[idx] = new_chain_id;
+                    // update the board_pos of the chains
+                }
+            }
+        }
+    }
+
+    // calculate num_liberties
+    int new_libs = 0;
+    for (int i = 0; i < boardsize; i++)
+    {
+        for (int j = 0; j < boardsize; j++)
+        {
+            int idx = b.coords_to_idx(i, j);
+            if (idx == board_pos)
+            {
+                continue;
+            }
+            if (b.get_point(idx) == pointType::EMPTY)
+            {
+                if (chain_is_neighbor(idx, new_chain_id, 0, board_pos))
+                {
+                    // printf("\n%d %d\n", i, j);
+                    new_libs++;
+                }
+            }
+        }
+    }
+
+    chain_liberties.erase(chain_id_1);
+    chain_liberties.erase(chain_id_2);
+
+    chains[board_pos] = new_chain_id;
+    chain_liberties[new_chain_id] = new_libs;
+}
+
 bool Game::is_liberty_of_chain(std::vector<int> &chain_ids, int i, int board_pos)
 {
     for (int x : chain_ids)
     {
-
         if (chain_is_neighbor(i, x, 0))
         // and borders our new merged chain
         {
@@ -505,7 +615,6 @@ bool Game::is_liberty_of_chain(std::vector<int> &chain_ids, int i, int board_pos
     {
         if (i == (board_pos + b.directions[d]))
         {
-
             return true;
         }
     }

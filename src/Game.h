@@ -10,7 +10,7 @@ class Game
 public:
     Game(int boardsize);
     Game(const Game &g);
-    Game &operator=(const Game &g);
+    // Game &operator=(const Game &g);
     bool make_play(int x, int y);
     bool whose_turn();
     int get_play_count();
@@ -26,9 +26,11 @@ private:
     void create_chain(int x, int y, bool color);
     void extend_chain(int x, int y, int chain_id);
     void merge_chains(std::vector<int> chain_ids, int x, int y);
+    void merge_two_chains(int chain_id_1, int chain_id_2, int x, int y);
     bool is_liberty_of_chain(std::vector<int> &chain_ids, int i, int board_pos);
     void capture_chain(int chain_id);
     int chain_is_neighbor(int idx, int chain_id, int excluded_point); // if chain neighbors point
+    int chain_is_neighbor(int board_pos, int chain_id, int excluded_point, int merge_point);
     std::pair<int, int> ko;
     int play_count;
     int black_chain_ctr;
