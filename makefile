@@ -30,7 +30,10 @@ INC_FLAGS := $(addprefix -I,$(INC_DIRS))
 CPPFLAGS := $(INC_FLAGS) -MMD -MP
 COMMON_FLAGS = -std=c++14 -Wall -Wextra -Wpedantic  -Wconversion -Wdouble-promotion  -Wno-unused-parameter -Wno-unused-function -Wno-sign-conversion -fsanitize=address -fsanitize=undefined -fsanitize-trap
 CXXFLAGS := -O2 $(COMMON_FLAGS) 
+debug: CXXFLAGS = -g3 -O0 $(COMMON_FLAGS)
 LDFLAGS := -lasan
+profile: CXXFLAGS = -O2 -pg $(COMMON_FLAGS)
+profile: LDFLAGS = -pg -lasan
      
 
 # The final build step.
@@ -40,13 +43,12 @@ $(BUILD_DIR)/$(TARGET_EXEC): $(OBJS)
 # Build step for C source
 $(BUILD_DIR)/%.c.o: %.c
 	mkdir -p $(dir $@)
-	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
+	 $(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
 # Build step for C++ source
 $(BUILD_DIR)/%.cpp.o: %.cpp
 	mkdir -p $(dir $@)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@ 
-
 
 .PHONY: clean
 clean:
@@ -60,14 +62,8 @@ clean:
 run: $(BUILD_DIR)/$(TARGET_EXEC)
 	./$(BUILD_DIR)/$(TARGET_EXEC)
 
-debug: CXXFLAGS = -g3 -O0 $(COMMON_FLAGS)
-debug: LDFLAGS := ""
-
 debug: clean $(BUILD_DIR)/$(TARGET_EXEC)
-	./$(BUILD_DIR)/$(TARGET_EXEC) 
-
-profile: CXXFLAGS = -O2 -pg $(COMMON_FLAGS)
-profile: LDFLAGS = -pg -lasan
+	gdb $(BUILD_DIR)/$(TARGET_EXEC) 
 
 profile: clean $(BUILD_DIR)/$(TARGET_EXEC)
 	./$(BUILD_DIR)/$(TARGET_EXEC)
