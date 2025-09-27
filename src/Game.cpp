@@ -11,6 +11,21 @@ Game::Game(int board_size) : b(board_size)
     white_chain_ctr = -1;
     this->chains = std::vector<int>((board_size + 2) * (board_size + 2), 0);
     boardsize = board_size;
+    black_ko_hash = 0;
+    white_ko_hash = 0;
+}
+
+Game::Game(const Game &g) : b(g.b)
+{
+    this->chains = g.chains;
+    this->chain_liberties = g.chain_liberties;
+    this->ko = g.ko;
+    this->play_count = g.play_count;
+    this->black_chain_ctr = g.black_chain_ctr;
+    this->white_chain_ctr = g.white_chain_ctr;
+    this->boardsize = g.boardsize;
+    this->black_ko_hash = g.black_ko_hash;
+    this->white_ko_hash = g.white_ko_hash;
 }
 
 bool Game::make_play(int x, int y)
@@ -22,6 +37,14 @@ bool Game::make_play(int x, int y)
         update_chains(x, y);
         b.set_point(x, y, color_to_move ? pointType::BLACK : pointType::WHITE);
         play_count++;
+        if (color_to_move)
+        {
+            black_ko_hash = b.get_hash();
+        }
+        else
+        {
+            white_ko_hash = b.get_hash();
+        }
         return true;
     }
     return false;
@@ -106,31 +129,35 @@ void Game::print_board()
     // }
 
     // std::cout << std::endl;
-    std::cout << "Chain Liberties" << std::endl;
+    // std::cout << "Chain Liberties" << std::endl;
 
-    for (int i = 0; i < (boardsize + 2); i++)
-    {
-        for (int j = 0; j < (boardsize + 2); j++)
-        {
-            int board_pos = i * (boardsize + 2) + j;
-            switch (b.get_point(i * (boardsize + 2) + j))
-            {
-            case pointType::BLANK:
-                std::cout << "# ";
-                break;
-            case pointType::EMPTY:
-                std::cout << "  ";
-                break;
-            case pointType::BLACK:
-            case pointType::WHITE:
-                printf("%d ", chain_liberties[chains[board_pos]]);
-                break;
-            }
-        }
+    // for (int i = 0; i < (boardsize + 2); i++)
+    // {
+    //     for (int j = 0; j < (boardsize + 2); j++)
+    //     {
+    //         int board_pos = i * (boardsize + 2) + j;
+    //         switch (b.get_point(i * (boardsize + 2) + j))
+    //         {
+    //         case pointType::BLANK:
+    //             std::cout << "# ";
+    //             break;
+    //         case pointType::EMPTY:
+    //             std::cout << "  ";
+    //             break;
+    //         case pointType::BLACK:
+    //         case pointType::WHITE:
+    //             printf("%d ", chain_liberties[chains[board_pos]]);
+    //             break;
+    //         }
+    //     }
 
-        std::cout << std::endl;
-    }
-    std::cout << std::endl;
+    //     std::cout << std::endl;
+    // }
+    // std::cout << std::endl;
+
+    // printf("Board hash: %lx\n", b.get_hash());
+    // printf("Black ko hash: %lx\n", black_ko_hash);
+    // printf("White ko hash: %lx\n", white_ko_hash);
 
     printf("Play Count %d, %s to move\n----------------\n", play_count, whose_turn() ? "black" : "white");
 }
@@ -152,52 +179,85 @@ bool Game::check_play(int x, int y)
     if ((neighbors.liberties & COUNT) == 0)
     {
 
-        // check if move is suicide
-        // if all neighboring opposite color chains have at least 2 liberties (one for stone to be added and another one for safety, they cant be captured)
-        //
-        // and no neighboring same color chain has at least 2 liberties (one for stone to be added, it can be captured) then it is suicide
-
-        // if a neighboring opposite color chain has < 2 liberties or a neighboring same color chain has > 1 liberties then it is not suicide
-
-        std::vector<int> chain_neighbors = get_neighboring_chains(x, y);
-
-        if (chain_neighbors.size() == 0)
+        if (!check_if_suicide(x, y, color_to_move))
         {
-            return true;
+            return false;
         }
+    }
 
-        for (int chain_id : chain_neighbors)
-        {
-            if (color_to_move == (chain_id > 0))
-            { // same color chain
-                if (chain_liberties[chain_id] > 1)
-                {
-                    // printf("extension to alive chain");
-                    return true;
-                }
-            }
-            else
-            // diff color chain
-            {
-                if (chain_liberties[chain_id] < 2)
-                {
-                    // printf("capture of dead chain");
-                    return true;
-                }
-            }
-        }
+    // ko checking
 
-        return false;
+    Game copy = *this;
+    copy.update_chains(x, y);
+
+    if (color_to_move)
+    {
+        // black to move
+        copy.b.set_point(x, y, pointType::BLACK);
+        // printf("\n\nlast position: %lx, possible next pos: %lx\n\n", black_ko_hash, copy.b.get_hash());
+        return black_ko_hash != copy.b.get_hash();
+        // if hashes are different not a repeat (except in case of hash collision ig)
+    }
+    else
+    {
+        // white to move
+        copy.b.set_point(x, y, pointType::WHITE);
+        // printf("\n\nlast position: %lx, possible next pos: %lx\n\n", white_ko_hash, copy.b.get_hash());
+        return white_ko_hash != copy.b.get_hash();
+        // if hashes are different not a repeat (except in case of hash collision ig)
     }
 
     // printf("has liberty");
-    return true;
+    // return true;
+}
+
+bool Game::check_if_suicide(int x, int y, bool color_to_move)
+{
+    // check if move is suicide
+    // if all neighboring opposite color chains have at least 2 liberties (one for stone to be added and another one for safety, they cant be captured)
+    //
+    // and no neighboring same color chain has at least 2 liberties (one for stone to be added, it can be captured) then it is suicide
+
+    // if a neighboring opposite color chain has < 2 liberties or a neighboring same color chain has > 1 liberties then it is not suicide
+
+    std::vector<int> chain_neighbors = get_neighboring_chains(x, y);
+
+    if (chain_neighbors.size() == 0)
+    {
+        return true;
+    }
+
+    for (int chain_id : chain_neighbors)
+    {
+        if (color_to_move == (chain_id > 0))
+        { // same color chain
+            if (chain_liberties[chain_id] > 1)
+            {
+                // printf("extension to alive chain");
+                return true;
+            }
+        }
+        else
+        // diff color chain
+        {
+            if (chain_liberties[chain_id] < 2)
+            {
+                // printf("capture of dead chain");
+                return true;
+            }
+        }
+    }
+
+    return false;
 }
 
 void Game::create_chain(int x, int y, bool color)
 {
     int board_pos = b.coords_to_idx(x, y);
+
+#if DEBUG
     assert(chains[board_pos] == 0);
+#endif
     chains[board_pos] = color ? black_chain_ctr : white_chain_ctr;
     chain_liberties[chains[board_pos]] = b.get_liberties(x, y);
     if (color)
@@ -335,7 +395,9 @@ void Game::update_chains(int x, int y)
             }
         }
 
+#if DEBUG
         assert(same_color_chains.size() > 0);
+#endif
 
         if (same_color_chains.size() == 1)
         {
@@ -353,7 +415,9 @@ void Game::update_chains(int x, int y)
 void Game::extend_chain(int x, int y, int chain_id)
 {
     int board_pos = b.coords_to_idx(x, y);
+#if DEBUG
     assert(chains[board_pos] == 0);
+#endif
     chains[board_pos] = chain_id;
     chain_liberties[chain_id]--;
 
@@ -377,6 +441,7 @@ void Game::extend_chain(int x, int y, int chain_id)
 
 void Game::merge_chains(std::vector<int> chain_ids, int x, int y)
 {
+#if DEBUG
     assert(chains[b.coords_to_idx(x, y)] == 0);
     // merge point must be currently empty for a new stone to be placed there
     for (unsigned int x = 0; x < chain_ids.size(); x++)
@@ -389,6 +454,7 @@ void Game::merge_chains(std::vector<int> chain_ids, int x, int y)
             // chains must be same color
         }
     }
+#endif
 
     int board_pos = b.coords_to_idx(x, y);
 
@@ -448,7 +514,9 @@ bool Game::is_liberty_of_chain(std::vector<int> &chain_ids, int i, int board_pos
 
 void Game::capture_chain(int chain_id)
 {
+#if DEBUG
     assert(chain_liberties[chain_id] == 0);
+#endif
     // make sure to decrement chain liberties before calling this method
 
     for (int i = 0; i < boardsize; i++)

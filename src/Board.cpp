@@ -39,6 +39,17 @@ Board::Board(int board_size) : boardsize(board_size)
     }
 }
 
+Board::Board(const Board &b)
+{
+    this->boardsize = b.boardsize;
+    this->board = b.board;
+
+    this->directions = b.directions;
+    this->zobrist = b.zobrist;
+    this->zobrist_hashes_black = b.zobrist_hashes_black;
+    this->zobrist_hashes_white = b.zobrist_hashes_white;
+}
+
 pointType Board::get_point(int x, int y)
 {
     return board[coords_to_idx(x, y)];
@@ -51,7 +62,9 @@ pointType Board::get_point(int idx)
 
 void Board::set_point(int x, int y, pointType value)
 {
+#if DEBUG
     assert(value != pointType::BLANK);
+#endif
 
     int idx = coords_to_idx(x, y);
     pointType current_state = board[idx];
@@ -146,7 +159,9 @@ nbrs Board::get_nbrs(int x, int y)
         }
     }
 
+#if DEBUG
     assert((num_edges + num_libs + num_black + num_white) == 4);
+#endif
 
     n.edges |= uint8_t(num_edges << 4);
     n.liberties |= uint8_t(num_libs << 4);
@@ -157,13 +172,22 @@ nbrs Board::get_nbrs(int x, int y)
 
 int Board::coords_to_idx(int x, int y)
 {
+#if DEBUG
     assert(x >= 0 && x < boardsize);
     assert(y >= 0 && y < boardsize);
+#endif
     return (boardsize + 2) * (y + 1) + x + 1;
 }
 
 std::pair<int, int> Board::idx_to_coords(int idx)
 {
+#if DEBUG
     assert(idx >= 0 && (unsigned int)idx < board.size());
+#endif
     return std::pair<int, int>(idx / (boardsize + 2) - 1, idx % (boardsize + 2) - 1);
+}
+
+uint64_t Board::get_hash()
+{
+    return zobrist;
 }

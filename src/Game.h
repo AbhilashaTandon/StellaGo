@@ -9,6 +9,8 @@ class Game
 {
 public:
     Game(int boardsize);
+    Game(const Game &g);
+    Game &operator=(const Game &g);
     bool make_play(int x, int y);
     bool whose_turn();
     int get_play_count();
@@ -18,6 +20,7 @@ public:
 private:
     Board b;
     bool check_play(int x, int y);
+    bool check_if_suicide(int x, int y, bool color_to_move);
     std::vector<int> chains;
     std::unordered_map<int, int> chain_liberties;
     void create_chain(int x, int y, bool color);
@@ -34,6 +37,8 @@ private:
     std::vector<int> get_neighboring_chains(int x, int y);
     std::vector<int> get_neighboring_chains(int board_pos);
     void update_chains(int x, int y);
+    uint64_t black_ko_hash;
+    uint64_t white_ko_hash;
 };
 
 #endif

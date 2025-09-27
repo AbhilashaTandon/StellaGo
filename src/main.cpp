@@ -7,9 +7,19 @@
 
 int main()
 {
-    srand(2);
+    srand(3);
 
     Game g = Game(BOARDSIZE);
+
+    // std::vector<std::pair<int, int>> moves = {std::pair<int, int>(0, 1), std::pair<int, int>(3, 1), std::pair<int, int>(1, 2), std::pair<int, int>(2, 2), std::pair<int, int>(1, 0), std::pair<int, int>(2, 0), std::pair<int, int>(2, 1), std::pair<int, int>(1, 1), std::pair<int, int>(2, 1), std::pair<int, int>(1, 1), std::pair<int, int>(2, 1), std::pair<int, int>(1, 1)};
+
+    // for (std::pair<int, int> coord : moves)
+    // {
+    //     if (g.make_play(coord.first, coord.second))
+    //     {
+    //         g.print_board();
+    //     }
+    // }
 
     for (int i = 0; i < 100000; i++)
     {
@@ -17,7 +27,7 @@ int main()
         {
             g.print_board();
         }
-        g.check_for_errors();
+        // g.check_for_errors();
     }
 
     return 0;

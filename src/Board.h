@@ -1,6 +1,8 @@
 #ifndef BOARD_H
 #define BOARD_H
 
+#define DEBUG false
+
 #include <cstdint>
 #include <vector>
 #include <cassert>
@@ -32,6 +34,7 @@ class Board
 
 public:
     Board(int boardsize);
+    Board(const Board &b);
     pointType get_point(int x, int y);
     pointType get_point(int idx);
     void set_point(int x, int y, pointType value);
@@ -42,6 +45,7 @@ public:
     int coords_to_idx(int x, int y);
     std::vector<int> directions;
     std::pair<int, int> idx_to_coords(int idx);
+    uint64_t get_hash();
 
 private:
     std::vector<pointType> board;
