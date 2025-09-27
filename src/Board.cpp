@@ -1,4 +1,7 @@
 #include <iostream>
+#include <random>
+#include <cmath>
+
 #include "Board.h"
 
 Board::Board(int board_size) : boardsize(board_size)
@@ -16,6 +19,24 @@ Board::Board(int board_size) : boardsize(board_size)
     }
 
     this->directions = {-boardsize - 2, -1, boardsize + 2, 1};
+
+    zobrist = 0; // empty board state
+
+    // set up random 64 bitstring generator
+    std::random_device rd;
+
+    std::mt19937_64 e2(rd());
+
+    std::uniform_int_distribution<long long int> dist(std::llround(std::pow(2, 61)), std::llround(std::pow(2, 62)));
+
+    std::cout << std::llround(std::pow(2, 61)) << std::endl;
+    std::cout << std::llround(std::pow(2, 62)) << std::endl;
+
+    for (int i = 0; i < boardsize * boardsize; i++)
+    {
+        zobrist_hashes_black.push_back(dist(e2));
+        zobrist_hashes_white.push_back(dist(e2));
+    }
 }
 
 pointType Board::get_point(int x, int y)
@@ -30,11 +51,20 @@ pointType Board::get_point(int idx)
 
 void Board::set_point(int x, int y, pointType value)
 {
-    board[coords_to_idx(x, y)] = value;
-}
+    assert(value != pointType::BLANK);
 
-void Board::set_point(int idx, pointType value)
-{
+    int idx = coords_to_idx(x, y);
+    pointType current_state = board[idx];
+
+    // xor to erase stone
+    zobrist ^= (zobrist_hashes_black[x * boardsize + y]) * (current_state == pointType::BLACK && value == pointType::EMPTY);
+
+    zobrist ^= (zobrist_hashes_white[x * boardsize + y]) * (current_state == pointType::WHITE && value == pointType::EMPTY);
+
+    // xor to add stone
+    zobrist ^= (zobrist_hashes_black[x * boardsize + y]) * (value == pointType::BLACK);
+    zobrist ^= (zobrist_hashes_white[x * boardsize + y]) * (value == pointType::WHITE);
+
     board[idx] = value;
 }
 

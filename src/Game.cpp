@@ -80,32 +80,32 @@ void Game::print_board()
     b.print_board();
 
     std::cout << std::endl;
-    std::cout << "Chain Indices" << std::endl;
+    // std::cout << "Chain Indices" << std::endl;
 
-    for (int i = 0; i < (boardsize + 2); i++)
-    {
-        for (int j = 0; j < (boardsize + 2); j++)
-        {
-            int board_pos = i * (boardsize + 2) + j;
-            switch (b.get_point(i * (boardsize + 2) + j))
-            {
-            case pointType::BLANK:
-                std::cout << "  #";
-                break;
-            case pointType::EMPTY:
-                std::cout << "   ";
-                break;
-            case pointType::BLACK:
-            case pointType::WHITE:
-                printf("%3d", chains[board_pos]);
-                break;
-            }
-        }
+    // for (int i = 0; i < (boardsize + 2); i++)
+    // {
+    //     for (int j = 0; j < (boardsize + 2); j++)
+    //     {
+    //         int board_pos = i * (boardsize + 2) + j;
+    //         switch (b.get_point(i * (boardsize + 2) + j))
+    //         {
+    //         case pointType::BLANK:
+    //             std::cout << "  #";
+    //             break;
+    //         case pointType::EMPTY:
+    //             std::cout << "   ";
+    //             break;
+    //         case pointType::BLACK:
+    //         case pointType::WHITE:
+    //             printf("%3d", chains[board_pos]);
+    //             break;
+    //         }
+    //     }
 
-        std::cout << std::endl;
-    }
+    //     std::cout << std::endl;
+    // }
 
-    std::cout << std::endl;
+    // std::cout << std::endl;
     std::cout << "Chain Liberties" << std::endl;
 
     for (int i = 0; i < (boardsize + 2); i++)
@@ -451,15 +451,19 @@ void Game::capture_chain(int chain_id)
     assert(chain_liberties[chain_id] == 0);
     // make sure to decrement chain liberties before calling this method
 
-    for (int i = 0; i < (boardsize + 2) * (boardsize + 2); i++)
+    for (int i = 0; i < boardsize; i++)
     {
-        if (chains[i] == chain_id)
+        for (int j = 0; j < boardsize; j++)
         {
-            chains[i] = 0;
-            b.set_point(i, pointType::EMPTY);
-            for (int chain_id : get_neighboring_chains(i))
+            int idx = b.coords_to_idx(i, j);
+            if (chains[idx] == chain_id)
             {
-                chain_liberties[chain_id]++;
+                chains[idx] = 0;
+                b.set_point(i, j, pointType::EMPTY);
+                for (int chain_id : get_neighboring_chains(idx))
+                {
+                    chain_liberties[chain_id]++;
+                }
             }
         }
     }
