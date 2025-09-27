@@ -20,7 +20,7 @@ public:
 private:
     Board b;
     bool check_play(int idx);
-    bool check_if_suicide(int idx, bool color_to_move);
+    bool is_suicide(int idx, bool color_to_move);
     std::vector<int> chains;
     std::unordered_map<int, int> chain_liberties;
     void create_chain(int idx, bool color);
