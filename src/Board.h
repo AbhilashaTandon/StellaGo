@@ -1,7 +1,7 @@
 #ifndef BOARD_H
 #define BOARD_H
 
-#define DEBUG false
+#define DEBUG true
 
 #include <cstdint>
 #include <vector>
