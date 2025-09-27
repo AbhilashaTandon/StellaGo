@@ -43,10 +43,14 @@ public:
     nbrs get_nbrs(int idx);
     int coords_to_idx(int x, int y);
     std::vector<int> directions;
+    // TODO: could this be an array
     std::pair<int, int> idx_to_coords(int idx);
     uint64_t get_hash();
+    int white_count;
+    int black_count;
+    int empty_count;
 
-private:
+protected:
     std::vector<pointType> board;
     int boardsize;
     uint64_t zobrist;

@@ -37,6 +37,10 @@ Board::Board(int board_size) : boardsize(board_size)
         zobrist_hashes_black.push_back(dist(e2));
         zobrist_hashes_white.push_back(dist(e2));
     }
+
+    black_count = 0;
+    white_count = 0;
+    empty_count = (board_size) * (board_size);
 }
 
 Board::Board(const Board &b)
@@ -48,6 +52,9 @@ Board::Board(const Board &b)
     this->zobrist = b.zobrist;
     this->zobrist_hashes_black = b.zobrist_hashes_black;
     this->zobrist_hashes_white = b.zobrist_hashes_white;
+    this->black_count = b.black_count;
+    this->white_count = b.white_count;
+    this->empty_count = b.empty_count;
 }
 
 pointType Board::get_point(int idx)
@@ -57,11 +64,13 @@ pointType Board::get_point(int idx)
 
 void Board::set_point(int idx, pointType value)
 {
+    pointType current_state = board[idx];
 #if DEBUG
     assert(value != pointType::BLANK);
+    assert(current_state != value);
+    assert(!(current_state == BLACK && value == WHITE));
+    assert(!(current_state == WHITE && value == BLACK));
 #endif
-
-    pointType current_state = board[idx];
 
     // xor to erase stone
     zobrist ^= (zobrist_hashes_black[idx]) * (current_state == pointType::BLACK && value == pointType::EMPTY);
@@ -73,6 +82,28 @@ void Board::set_point(int idx, pointType value)
     zobrist ^= (zobrist_hashes_white[idx]) * (value == pointType::WHITE);
 
     board[idx] = value;
+
+    switch (current_state)
+    {
+    case pointType::EMPTY:
+        black_count += (value == pointType::BLACK);
+        white_count += (value == pointType::WHITE);
+        empty_count--;
+        break;
+    case pointType::BLACK:
+        black_count--;
+        empty_count++;
+        break;
+    case pointType::WHITE:
+        white_count--;
+        empty_count++;
+        break;
+
+        //     default:
+        // #if DEBUG
+        //         assert(false);
+        // #endif
+    }
 }
 
 int Board::get_liberties(int idx)

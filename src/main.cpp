@@ -8,7 +8,7 @@
 
 void stress_test()
 {
-    for (int i = 0; i < 1000; i++)
+    for (int i = 0; i < 10000; i++)
     {
         Game g = Game(BOARDSIZE);
         for (int i = 0; i < 1000; i++)
@@ -33,7 +33,7 @@ int main()
     // }
 
     Game g = Game(BOARDSIZE);
-    for (int i = 0; i < 1000; i++)
+    for (int i = 0; i < 10000; i++)
     {
         if (g.make_play(rand() % BOARDSIZE, rand() % BOARDSIZE))
         {
