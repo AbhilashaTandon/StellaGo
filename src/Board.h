@@ -35,13 +35,12 @@ class Board
 public:
     Board(int boardsize);
     Board(const Board &b);
-    pointType get_point(int x, int y);
     pointType get_point(int idx);
-    void set_point(int x, int y, pointType value);
-    int get_liberties(int x, int y);
+    void set_point(int idx, pointType value);
+    int get_liberties(int idx);
     // bool is_starpoint(int x, int y);
     void print_board();
-    nbrs get_nbrs(int x, int y);
+    nbrs get_nbrs(int idx);
     int coords_to_idx(int x, int y);
     std::vector<int> directions;
     std::pair<int, int> idx_to_coords(int idx);

@@ -19,14 +19,14 @@ public:
 
 private:
     Board b;
-    bool check_play(int x, int y);
-    bool check_if_suicide(int x, int y, bool color_to_move);
+    bool check_play(int idx);
+    bool check_if_suicide(int idx, bool color_to_move);
     std::vector<int> chains;
     std::unordered_map<int, int> chain_liberties;
-    void create_chain(int x, int y, bool color);
-    void extend_chain(int x, int y, int chain_id);
-    void merge_chains(std::vector<int> chain_ids, int x, int y);
-    void merge_two_chains(int chain_id_1, int chain_id_2, int x, int y);
+    void create_chain(int idx, bool color);
+    void extend_chain(int idx, int chain_id);
+    void merge_chains(std::vector<int> chain_ids, int idx);
+    void merge_two_chains(int chain_id_1, int chain_id_2, int idx);
     bool is_liberty_of_chain(std::vector<int> &chain_ids, int i, int board_pos);
     void capture_chain(int chain_id);
     int chain_is_neighbor(int idx, int chain_id, int excluded_point); // if chain neighbors point
@@ -36,9 +36,8 @@ private:
     int black_chain_ctr;
     int white_chain_ctr;
     int boardsize;
-    std::vector<int> get_neighboring_chains(int x, int y);
-    std::vector<int> get_neighboring_chains(int board_pos);
-    void update_chains(int x, int y);
+    std::vector<int> get_neighboring_chains(int idx);
+    void update_chains(int idx);
     uint64_t black_ko_hash;
     uint64_t white_ko_hash;
 };

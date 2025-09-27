@@ -32,7 +32,7 @@ Board::Board(int board_size) : boardsize(board_size)
     std::cout << std::llround(std::pow(2, 61)) << std::endl;
     std::cout << std::llround(std::pow(2, 62)) << std::endl;
 
-    for (int i = 0; i < boardsize * boardsize; i++)
+    for (int i = 0; i < (boardsize + 2) * (boardsize + 2); i++)
     {
         zobrist_hashes_black.push_back(dist(e2));
         zobrist_hashes_white.push_back(dist(e2));
@@ -50,41 +50,34 @@ Board::Board(const Board &b)
     this->zobrist_hashes_white = b.zobrist_hashes_white;
 }
 
-pointType Board::get_point(int x, int y)
-{
-    return board[coords_to_idx(x, y)];
-}
-
 pointType Board::get_point(int idx)
 {
     return board[idx];
 }
 
-void Board::set_point(int x, int y, pointType value)
+void Board::set_point(int idx, pointType value)
 {
 #if DEBUG
     assert(value != pointType::BLANK);
 #endif
 
-    int idx = coords_to_idx(x, y);
     pointType current_state = board[idx];
 
     // xor to erase stone
-    zobrist ^= (zobrist_hashes_black[x * boardsize + y]) * (current_state == pointType::BLACK && value == pointType::EMPTY);
+    zobrist ^= (zobrist_hashes_black[idx]) * (current_state == pointType::BLACK && value == pointType::EMPTY);
 
-    zobrist ^= (zobrist_hashes_white[x * boardsize + y]) * (current_state == pointType::WHITE && value == pointType::EMPTY);
+    zobrist ^= (zobrist_hashes_white[idx]) * (current_state == pointType::WHITE && value == pointType::EMPTY);
 
     // xor to add stone
-    zobrist ^= (zobrist_hashes_black[x * boardsize + y]) * (value == pointType::BLACK);
-    zobrist ^= (zobrist_hashes_white[x * boardsize + y]) * (value == pointType::WHITE);
+    zobrist ^= (zobrist_hashes_black[idx]) * (value == pointType::BLACK);
+    zobrist ^= (zobrist_hashes_white[idx]) * (value == pointType::WHITE);
 
     board[idx] = value;
 }
 
-int Board::get_liberties(int x, int y)
+int Board::get_liberties(int idx)
 {
     int num_liberties = 0;
-    int idx = coords_to_idx(x, y);
     for (int i = 0; i < 4; i++)
     {
         if (board[idx + directions[i]] == pointType::EMPTY)
@@ -110,10 +103,10 @@ void Board::print_board()
                 std::cout << "  ";
                 break;
             case pointType::BLACK:
-                std::cout << "B ";
+                std::cout << "○ ";
                 break;
             case pointType::WHITE:
-                std::cout << "W ";
+                std::cout << "● ";
                 break;
             }
         }
@@ -122,7 +115,7 @@ void Board::print_board()
     }
 }
 
-nbrs Board::get_nbrs(int x, int y)
+nbrs Board::get_nbrs(int idx)
 {
     nbrs n;
     n.edges = 0;
@@ -133,8 +126,6 @@ nbrs Board::get_nbrs(int x, int y)
     uint8_t num_libs = 0;
     uint8_t num_black = 0;
     uint8_t num_white = 0;
-
-    int idx = coords_to_idx(x, y);
 
     for (uint8_t i = 0; i < 4; i++)
     {

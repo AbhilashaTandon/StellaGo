@@ -2,3 +2,4 @@ build
 log.txt
 gmon.out
 profile.txt
+.vscode

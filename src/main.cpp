@@ -32,17 +32,17 @@ int main()
     //     }
     // }
 
-    // Game g = Game(BOARDSIZE);
-    // for (int i = 0; i < 1000; i++)
-    // {
-    //     if (g.make_play(rand() % BOARDSIZE, rand() % BOARDSIZE))
-    //     {
-    //         g.print_board();
+    Game g = Game(BOARDSIZE);
+    for (int i = 0; i < 1000; i++)
+    {
+        if (g.make_play(rand() % BOARDSIZE, rand() % BOARDSIZE))
+        {
+            g.print_board();
 
-    //         g.check_for_errors();
-    //     }
-    // }
-    stress_test();
+            g.check_for_errors();
+        }
+    }
+    // stress_test();
 
     return 0;
 }

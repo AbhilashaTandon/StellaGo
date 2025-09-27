@@ -31,11 +31,12 @@ Game::Game(const Game &g) : b(g.b)
 bool Game::make_play(int x, int y)
 {
     bool color_to_move = whose_turn();
+    int idx = b.coords_to_idx(x, y);
 
-    if (check_play(x, y))
+    if (check_play(idx))
     {
-        update_chains(x, y);
-        b.set_point(x, y, color_to_move ? pointType::BLACK : pointType::WHITE);
+        update_chains(idx);
+        b.set_point(idx, color_to_move ? pointType::BLACK : pointType::WHITE);
         play_count++;
         if (color_to_move)
         {
@@ -162,24 +163,24 @@ void Game::print_board()
     printf("Play Count %d, %s to move\n----------------\n", play_count, whose_turn() ? "black" : "white");
 }
 
-bool Game::check_play(int x, int y)
+bool Game::check_play(int idx)
 {
     bool color_to_move = whose_turn();
 
-    struct nbrs neighbors = b.get_nbrs(x, y);
+    struct nbrs neighbors = b.get_nbrs(idx);
 
-    if (b.get_point(x, y) != pointType::EMPTY)
+    if (b.get_point(idx) != pointType::EMPTY)
     {
         return false;
     }
 
-    // printf("%d %d ", x, y);
+    // printf("%d %d ", idx);
     // printf("%d %d %d %d\n", (neighbors.liberties & COUNT) >> 4, (neighbors.black & COUNT) >> 4, (neighbors.white & COUNT) >> 4, (neighbors.edges & COUNT) >> 4);
 
     if ((neighbors.liberties & COUNT) == 0)
     {
 
-        if (!check_if_suicide(x, y, color_to_move))
+        if (!check_if_suicide(idx, color_to_move))
         {
             return false;
         }
@@ -188,12 +189,12 @@ bool Game::check_play(int x, int y)
     // ko checking
 
     Game copy = *this;
-    copy.update_chains(x, y);
+    copy.update_chains(idx);
 
     if (color_to_move)
     {
         // black to move
-        copy.b.set_point(x, y, pointType::BLACK);
+        copy.b.set_point(idx, pointType::BLACK);
         // printf("\n\nlast position: %lx, possible next pos: %lx\n\n", black_ko_hash, copy.b.get_hash());
         return black_ko_hash != copy.b.get_hash();
         // if hashes are different not a repeat (except in case of hash collision ig)
@@ -201,7 +202,7 @@ bool Game::check_play(int x, int y)
     else
     {
         // white to move
-        copy.b.set_point(x, y, pointType::WHITE);
+        copy.b.set_point(idx, pointType::WHITE);
         // printf("\n\nlast position: %lx, possible next pos: %lx\n\n", white_ko_hash, copy.b.get_hash());
         return white_ko_hash != copy.b.get_hash();
         // if hashes are different not a repeat (except in case of hash collision ig)
@@ -211,7 +212,7 @@ bool Game::check_play(int x, int y)
     // return true;
 }
 
-bool Game::check_if_suicide(int x, int y, bool color_to_move)
+bool Game::check_if_suicide(int idx, bool color_to_move)
 {
     // check if move is suicide
     // if all neighboring opposite color chains have at least 2 liberties (one for stone to be added and another one for safety, they cant be captured)
@@ -220,7 +221,7 @@ bool Game::check_if_suicide(int x, int y, bool color_to_move)
 
     // if a neighboring opposite color chain has < 2 liberties or a neighboring same color chain has > 1 liberties then it is not suicide
 
-    std::vector<int> chain_neighbors = get_neighboring_chains(x, y);
+    std::vector<int> chain_neighbors = get_neighboring_chains(idx);
 
     if (chain_neighbors.size() == 0)
     {
@@ -251,15 +252,13 @@ bool Game::check_if_suicide(int x, int y, bool color_to_move)
     return false;
 }
 
-void Game::create_chain(int x, int y, bool color)
+void Game::create_chain(int board_pos, bool color)
 {
-    int board_pos = b.coords_to_idx(x, y);
-
 #if DEBUG
     assert(chains[board_pos] == 0);
 #endif
     chains[board_pos] = color ? black_chain_ctr : white_chain_ctr;
-    chain_liberties[chains[board_pos]] = b.get_liberties(x, y);
+    chain_liberties[chains[board_pos]] = b.get_liberties(board_pos);
     if (color)
     {
         black_chain_ctr++;
@@ -313,28 +312,8 @@ int Game::chain_is_neighbor(int board_pos, int chain_id, int excluded_point, int
     return false;
 }
 
-std::vector<int> Game::get_neighboring_chains(int x, int y)
-{
-    int board_pos = b.coords_to_idx(x, y);
-    std::vector<int> neighbors = std::vector<int>();
-    for (int i = 0; i < 4; i++)
-    {
-        int chain_id = chains[board_pos + b.directions[i]];
-        if (chain_id != 0)
-        {
-            if (std::find(neighbors.begin(), neighbors.end(), chain_id) == neighbors.end())
-            // i should replace this with a set later for efficiency
-            {
-                neighbors.push_back(chains[board_pos + b.directions[i]]);
-            }
-        }
-    }
-    return neighbors;
-}
-
 std::vector<int> Game::get_neighboring_chains(int board_pos)
 {
-
     std::vector<int> neighbors = std::vector<int>();
     for (int i = 0; i < 4; i++)
     {
@@ -351,9 +330,9 @@ std::vector<int> Game::get_neighboring_chains(int board_pos)
     return neighbors;
 }
 
-void Game::update_chains(int x, int y)
+void Game::update_chains(int idx)
 {
-    struct nbrs n = b.get_nbrs(x, y);
+    struct nbrs n = b.get_nbrs(idx);
 
     bool side = whose_turn();
 
@@ -367,7 +346,7 @@ void Game::update_chains(int x, int y)
 
     // printf("%x %x", n.black, n.white);
 
-    std::vector<int> neighboring_chains = get_neighboring_chains(x, y);
+    std::vector<int> neighboring_chains = get_neighboring_chains(idx);
 
     for (int chain_id : neighboring_chains)
     {
@@ -385,7 +364,7 @@ void Game::update_chains(int x, int y)
     {
         // new chain
         // printf("new chain");
-        create_chain(x, y, side);
+        create_chain(idx, side);
     }
 
     else if (num_same_color == 1)
@@ -397,7 +376,7 @@ void Game::update_chains(int x, int y)
             if (side == (chain_id > 0))
             {
                 // printf("extension");
-                extend_chain(x, y, chain_id);
+                extend_chain(idx, chain_id);
                 break;
             }
         }
@@ -426,30 +405,31 @@ void Game::update_chains(int x, int y)
         if (same_color_chains.size() == 1)
         {
             // printf("extension");
-            extend_chain(x, y, same_color_chains[0]);
+            extend_chain(idx, same_color_chains[0]);
         }
         else if (same_color_chains.size() == 2)
         {
             // printf("merger");
-            merge_two_chains(same_color_chains[0], same_color_chains[1], x, y);
+            merge_two_chains(same_color_chains[0], same_color_chains[1], idx);
         }
         else if (same_color_chains.size() > 2)
         {
-            merge_chains(same_color_chains, x, y);
+            merge_chains(same_color_chains, idx);
         }
     }
 }
 
-void Game::extend_chain(int x, int y, int chain_id)
+void Game::extend_chain(int board_pos, int chain_id)
+
 {
-    int board_pos = b.coords_to_idx(x, y);
+    // int board_pos = b.coords_to_idx(idx);
 #if DEBUG
     assert(chains[board_pos] == 0);
 #endif
     chains[board_pos] = chain_id;
     chain_liberties[chain_id]--;
 
-    uint8_t libs = b.get_nbrs(x, y).liberties;
+    uint8_t libs = b.get_nbrs(board_pos).liberties;
 
     for (int i = 0; i < 4; i++)
     {
@@ -467,10 +447,11 @@ void Game::extend_chain(int x, int y, int chain_id)
     chains[board_pos] = chain_id;
 }
 
-void Game::merge_chains(std::vector<int> chain_ids, int x, int y)
+void Game::merge_chains(std::vector<int> chain_ids, int board_pos)
+
 {
 #if DEBUG
-    assert(chains[b.coords_to_idx(x, y)] == 0);
+    assert(chains[board_pos] == 0);
     // merge point must be currently empty for a new stone to be placed there
     for (unsigned int x = 0; x < chain_ids.size(); x++)
     {
@@ -484,7 +465,7 @@ void Game::merge_chains(std::vector<int> chain_ids, int x, int y)
     }
 #endif
 
-    int board_pos = b.coords_to_idx(x, y);
+    // int board_pos = b.coords_to_idx(idx);
 
     int new_chain_id = *std::min_element(chain_ids.begin(), chain_ids.end());
 
@@ -537,10 +518,10 @@ void Game::merge_chains(std::vector<int> chain_ids, int x, int y)
     chain_liberties[new_chain_id] = new_libs;
 }
 
-void Game::merge_two_chains(int chain_id_1, int chain_id_2, int x, int y)
+void Game::merge_two_chains(int chain_id_1, int chain_id_2, int board_pos)
 {
 #if DEBUG
-    assert(chains[b.coords_to_idx(x, y)] == 0);
+    assert(chains[board_pos] == 0);
     // merge point must be currently empty for a new stone to be placed there
     assert(chain_id_1 != chain_id_2);
     // no double ups
@@ -548,9 +529,8 @@ void Game::merge_two_chains(int chain_id_1, int chain_id_2, int x, int y)
     // chains must be same color
 #endif
 
-    int board_pos = b.coords_to_idx(x, y);
-
     int new_chain_id = (chain_id_1 < chain_id_2) ? chain_id_1 : chain_id_2;
+    int old_chain_id = (new_chain_id == chain_id_1) ? chain_id_2 : chain_id_1;
 
     // update chain ids
     for (int i = 0; i < boardsize; i++)
@@ -561,7 +541,7 @@ void Game::merge_two_chains(int chain_id_1, int chain_id_2, int x, int y)
             // for every point on the board
             if (b.get_point(idx) != pointType::EMPTY)
             {
-                if (chains[idx] == chain_id_1 || chains[idx] == chain_id_2)
+                if (chains[idx] == old_chain_id)
                 {
                     chains[idx] = new_chain_id;
                     // update the board_pos of the chains
@@ -592,8 +572,7 @@ void Game::merge_two_chains(int chain_id_1, int chain_id_2, int x, int y)
         }
     }
 
-    chain_liberties.erase(chain_id_1);
-    chain_liberties.erase(chain_id_2);
+    chain_liberties.erase(old_chain_id);
 
     chains[board_pos] = new_chain_id;
     chain_liberties[new_chain_id] = new_libs;
@@ -636,7 +615,7 @@ void Game::capture_chain(int chain_id)
             if (chains[idx] == chain_id)
             {
                 chains[idx] = 0;
-                b.set_point(i, j, pointType::EMPTY);
+                b.set_point(idx, pointType::EMPTY);
                 for (int chain_id : get_neighboring_chains(idx))
                 {
                     chain_liberties[chain_id]++;
