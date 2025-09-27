@@ -21,13 +21,16 @@ int main()
     //     }
     // }
 
-    for (int i = 0; i < 100000; i++)
+    for (int x = 0; x < 1000; x++)
     {
-        if (g.make_play(rand() % BOARDSIZE, rand() % BOARDSIZE))
+        for (int i = 0; i < 10000; i++)
         {
-            g.print_board();
+            if (g.make_play(rand() % BOARDSIZE, rand() % BOARDSIZE))
+            {
+                g.print_board();
+            }
+            // g.check_for_errors();
         }
-        // g.check_for_errors();
     }
 
     return 0;

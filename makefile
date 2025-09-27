@@ -30,9 +30,7 @@ INC_FLAGS := $(addprefix -I,$(INC_DIRS))
 CPPFLAGS := $(INC_FLAGS) -MMD -MP
 COMMON_FLAGS = -std=c++14 -Wall -Wextra -Wpedantic  -Wconversion -Wdouble-promotion  -Wno-unused-parameter -Wno-unused-function -Wno-sign-conversion -fsanitize=address -fsanitize=undefined -fsanitize-trap
 CXXFLAGS := -O2 $(COMMON_FLAGS) 
-debug: CXXFLAGS = -g3 -O0 $(COMMON_FLAGS)
 LDFLAGS := -lasan
-debug: LDFLAGS := ""
      
 
 # The final build step.
@@ -62,6 +60,15 @@ clean:
 run: $(BUILD_DIR)/$(TARGET_EXEC)
 	./$(BUILD_DIR)/$(TARGET_EXEC)
 
-debug: $(BUILD_DIR)/$(TARGET_EXEC)
+debug: CXXFLAGS = -g3 -O0 $(COMMON_FLAGS)
+debug: LDFLAGS := ""
+
+debug: clean $(BUILD_DIR)/$(TARGET_EXEC)
 	./$(BUILD_DIR)/$(TARGET_EXEC) 
 
+profile: CXXFLAGS = -O2 -pg $(COMMON_FLAGS)
+profile: LDFLAGS = -pg -lasan
+
+profile: clean $(BUILD_DIR)/$(TARGET_EXEC)
+	./$(BUILD_DIR)/$(TARGET_EXEC)
+	gprof ./$(BUILD_DIR)/$(TARGET_EXEC) gmon.out > profile.txt
