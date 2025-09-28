@@ -181,29 +181,20 @@ bool Board::check_play(uint16_t idx)
         return false;
     }
 
-    // printf("%d %d ", idx);
-    // printf("%d %d %d %d\n", (neighbors.liberties & COUNT) >> 4, (neighbors.black & COUNT) >> 4, (neighbors.white & COUNT) >> 4, (neighbors.edges & COUNT) >> 4);
-
-    if ((neighbors.liberties & COUNT) == 0)
+    if (is_suicide(idx))
     {
-
-        if (is_suicide(idx))
-        {
-            return false;
-        }
+        return false;
     }
 
     // ko checking
 
     Board copy = *this;
-    print_board();
     copy.update_chains(idx);
 
     if (color_to_move)
     {
         // black to move
         copy.set_point(idx, pointType::BLACK);
-        // printf("\n\nlast position: %lx, possible next pos: %lx\n\n", black_ko_hash, copy.b.get_hash());
         return black_ko_hash != copy.get_hash();
         // if hashes are different not a repeat (except in case of hash collision ig)
     }
@@ -211,7 +202,6 @@ bool Board::check_play(uint16_t idx)
     {
         // white to move
         copy.set_point(idx, pointType::WHITE);
-        // printf("\n\nlast position: %lx, possible next pos: %lx\n\n", white_ko_hash, copy.b.get_hash());
         return white_ko_hash != copy.get_hash();
         // if hashes are different not a repeat (except in case of hash collision ig)
     }
@@ -225,38 +215,54 @@ bool Board::is_suicide(uint16_t idx)
     // and no neighboring same color chain has at least 2 liberties (one for stone to be added, it can be captured) then it is suicide
 
     // if a neighboring opposite color chain has < 2 liberties or a neighboring same color chain has > 1 liberties then it is not suicide
-
     bool color_to_move = whose_turn();
 
     for (uint16_t i = 0; i < 4; i++)
     {
-        if (board[idx + directions[i]] == pointType::BLANK)
-        {
-            continue;
-        }
         uint16_t chain_id = chain_roots[idx + directions[i]];
-        if (chain_id == 0)
+        switch (board[idx + directions[i]])
         {
+        case pointType::BLANK:
+            break;
+        case pointType::EMPTY:
             // if there's a liberty its not suicide
-            // printf("has liberty");
             return false;
-        }
-        if (color_to_move == (chain_id > 0))
-        { // same color chain
-            if (chain_liberties[chain_id] > 1)
+        case pointType::BLACK:
+            if (color_to_move)
             {
-                // printf("extension to alive chain");
-                return false;
+                // same color chain
+                if (chain_liberties[chain_id] > 1)
+                {
+                    return false;
+                }
             }
-        }
-        else
-        // diff color chain
-        {
-            if (chain_liberties[chain_id] < 2)
+            else
+            // diff color chain
             {
-                // printf("capture of dead chain");
-                return false;
+                if (chain_liberties[chain_id] < 2)
+                {
+                    return false;
+                }
             }
+            break;
+        case pointType::WHITE:
+            if (!color_to_move)
+            {
+                // same color chain
+                if (chain_liberties[chain_id] > 1)
+                {
+                    return false;
+                }
+            }
+            else
+            // diff color chain
+            {
+                if (chain_liberties[chain_id] < 2)
+                {
+                    return false;
+                }
+            }
+            break;
         }
     }
 
@@ -378,7 +384,6 @@ void Board::merge_chains(std::array<uint16_t, 4> neighbor_roots, uint16_t num_ne
                 if (chain_roots[i + directions[j]] == new_root)
                 {
                     num_liberties++;
-                    printf("\n%d\n", i);
                     break;
                 }
             }
@@ -582,7 +587,7 @@ bool Board::make_play(uint16_t x, uint16_t y)
 
     if (check_play(idx))
     {
-        print_board();
+        // print_board();
         update_chains(idx);
         set_point(idx, color_to_move ? pointType::BLACK : pointType::WHITE);
         play_count++;
@@ -594,6 +599,10 @@ bool Board::make_play(uint16_t x, uint16_t y)
         {
             white_ko_hash = get_hash();
         }
+#if DEBUG
+        print_board();
+        check_for_errors();
+#endif
         return true;
     }
     return false;
@@ -622,7 +631,11 @@ void Board::check_for_errors()
             sizes_check[chain_roots[i]]++;
 
             assert(chain_roots[i] != 0);
-            assert(chain_liberties[chain_roots[i]] != 0);
+            if (chain_liberties[chain_roots[i]] == 0)
+            {
+                std::cout << "no libs " << i << " " << chain_roots[i] << " " << chain_liberties[chain_roots[i]] << '\n';
+                assert(false);
+            }
             assert(chain_sizes[chain_roots[i]] != 0);
             break;
         case pointType::EMPTY:
@@ -649,7 +662,7 @@ void Board::check_for_errors()
                     {
                         past_chains[num_past_chains] = chain_id;
                         num_past_chains++;
-                        std::cout << i << " " << chain_roots[i + directions[d]] << '\n';
+                        // std::cout << i << " " << chain_roots[i + directions[d]] << '\n';
                         liberties_check[chain_roots[i + directions[d]]]++;
                     }
                 }
@@ -659,10 +672,19 @@ void Board::check_for_errors()
     }
     for (uint16_t i = 0; i < NUM_POINTS; i++)
     {
-        std::cout << i << " " << liberties_check[i] << " " << chain_liberties[i] << '\n';
-        std::cout << i << " " << sizes_check[i] << " " << chain_sizes[i] << '\n';
-        assert(liberties_check[i] == chain_liberties[i]);
-        assert(sizes_check[i] == chain_sizes[i]);
+        // std::cout << i << " " << liberties_check[i] << " " << chain_liberties[i] << '\n';
+        // std::cout << i << " " << sizes_check[i] << " " << chain_sizes[i] << '\n';
+        if (liberties_check[i] != chain_liberties[i])
+        {
+            std::cout << "libs " << i << " " << liberties_check[i] << " " << chain_liberties[i] << '\n';
+            assert(false);
+        }
+        if (sizes_check[i] != chain_sizes[i])
+        {
+            std::cout << "size " << i << " " << sizes_check[i] << " " << chain_sizes[i] << '\n';
+
+            assert(false);
+        }
     }
 }
 
@@ -675,19 +697,8 @@ void Board::update_chains(uint16_t idx)
     pointType oppositeSide = side ? pointType::WHITE : pointType::BLACK;
     pointType sameSide = side ? pointType::BLACK : pointType::WHITE;
 
-    // printf("\n\n%d\n\n", side);
-
     uint16_t num_same_color = ((side ? n.black : n.white) & COUNT) >> 4;
-    // uint16_t num_diff_color = ((side ? n.white : n.black) & COUNT) >> 4;
 
-    // printf("\n\nBLACK: %x\tWHITE: %x\tEDGE: %x\tLIB: %x\n\n", n.black, n.white, n.edges, n.liberties);
-
-    // printf("%d", (side ? n.black : n.white) & COUNT);
-
-    // printf("%x %x", n.black, n.white);
-
-    // if (num_diff_color != 0)
-    // {
     std::array<int, 4> prev_chains{};
     uint16_t prev_chain_count = 0;
     for (uint16_t i = 0; i < 4; i++)
@@ -729,7 +740,6 @@ void Board::update_chains(uint16_t idx)
     if (num_same_color == 0)
     {
         // new chain
-        // printf("new chain");
         create_chain(idx);
     }
 
@@ -741,7 +751,6 @@ void Board::update_chains(uint16_t idx)
             uint16_t neighbor = idx + directions[i];
             if (board[neighbor] == sameSide)
             {
-                // printf("extension");
                 extend_chain(idx, neighbor);
                 break;
             }
@@ -751,8 +760,6 @@ void Board::update_chains(uint16_t idx)
     else
     {
         // merger or extension
-
-        // printf("merger or extension");
 
         std::array<uint16_t, 4> same_color_chains{};
         uint16_t same_color_count = 0;
@@ -787,7 +794,6 @@ void Board::update_chains(uint16_t idx)
 
         if (same_color_count == 1)
         {
-            // printf("extension");
             extend_chain(idx, same_color_chains[0]);
         }
         else

@@ -18,7 +18,7 @@
 
 int main()
 {
-    srand(0);
+    srand(time(NULL));
 
     // std::vector<std::pair<int, int>> moves = {std::pair<int, int>(0, 1), std::pair<int, int>(3, 1), std::pair<int, int>(1, 2), std::pair<int, int>(2, 2), std::pair<int, int>(1, 0), std::pair<int, int>(2, 0), std::pair<int, int>(2, 1), std::pair<int, int>(1, 1), std::pair<int, int>(2, 1), std::pair<int, int>(1, 1), std::pair<int, int>(2, 1), std::pair<int, int>(1, 1)};
 
@@ -34,12 +34,7 @@ int main()
     Board g = Board();
     for (int i = 0; i < 10000; i++)
     {
-        if (g.make_play(rand() % BOARD_SIZE, rand() % BOARD_SIZE))
-        {
-            g.print_board();
-
-            g.check_for_errors();
-        }
+        g.make_play(rand() % BOARD_SIZE, rand() % BOARD_SIZE);
     }
     // #endif
     // #if PROFILE
