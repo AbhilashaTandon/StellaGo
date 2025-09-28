@@ -33,8 +33,8 @@ COMMON_FLAGS = -std=c++14 -Wall -Wextra -Wpedantic  -Wconversion -Wdouble-promot
 run: CXXFLAGS := -O2 $(COMMON_FLAGS) -fsanitize=address -fsanitize=undefined -fsanitize-trap
 run: LDFLAGS := -lasan -fsanitize=address
 debug: CXXFLAGS = -g3 -O0 $(COMMON_FLAGS)
-profile: CXXFLAGS = -O2 -pg $(COMMON_FLAGS)
-profile: LDFLAGS = -pg -lasan
+profile: CXXFLAGS = -O0 -g -pg $(COMMON_FLAGS) -fno-inline
+profile: LDFLAGS = -g -pg
      
 
 # The final build step.
@@ -68,4 +68,5 @@ debug: clean $(BUILD_DIR)/$(TARGET_EXEC)
 
 profile: clean $(BUILD_DIR)/$(TARGET_EXEC)
 	./$(BUILD_DIR)/$(TARGET_EXEC)
-	gprof ./$(BUILD_DIR)/$(TARGET_EXEC) gmon.out > profile.txt
+	valgrind --tool=callgrind --callgrind-out-file=callgrind.txt ./$(BUILD_DIR)/$(TARGET_EXEC)
+	callgrind_annotate callgrind.txt > callgrind_profile.txt

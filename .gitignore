@@ -4,3 +4,8 @@ gmon.out
 profile.txt
 .vscode
 profile copy.txt
+profile copy 2.txt
+src/Game.h
+valgrind_profile.txt
+callgrind.txt
+callgrind_profile.txt
