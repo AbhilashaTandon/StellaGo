@@ -2,6 +2,7 @@
 #define GAME_H
 
 #include "Board.h"
+#include "Config.h"
 #include <vector>
 #include <unordered_map>
 

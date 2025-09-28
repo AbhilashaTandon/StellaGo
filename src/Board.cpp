@@ -29,9 +29,6 @@ Board::Board(int board_size) : boardsize(board_size)
 
     std::uniform_int_distribution<long long int> dist(std::llround(std::pow(2, 61)), std::llround(std::pow(2, 62)));
 
-    std::cout << std::llround(std::pow(2, 61)) << std::endl;
-    std::cout << std::llround(std::pow(2, 62)) << std::endl;
-
     for (int i = 0; i < (boardsize + 2) * (boardsize + 2); i++)
     {
         zobrist_hashes_black.push_back(dist(e2));

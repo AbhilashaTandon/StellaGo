@@ -550,11 +550,8 @@ void Game::merge_two_chains(int chain_id_1, int chain_id_2, int board_pos)
             // for every point on the board
             if (chains[idx] == old_chain_id)
             {
-                if (b.get_point(idx) != pointType::EMPTY)
-                {
-                    chains[idx] = new_chain_id;
-                    // update the board_pos of the chains
-                }
+                chains[idx] = new_chain_id;
+                // update the board_pos of the chains
             }
         }
     }
