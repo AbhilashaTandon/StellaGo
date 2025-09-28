@@ -33,8 +33,8 @@ COMMON_FLAGS = -std=c++14 -Wall -Wextra -Wpedantic  -Wconversion -Wdouble-promot
 run: CXXFLAGS := -O2 $(COMMON_FLAGS) -fsanitize=address -fsanitize=undefined -fsanitize-trap
 run: LDFLAGS := -lasan -fsanitize=address
 debug: CXXFLAGS = -g3 -O0 $(COMMON_FLAGS)
-profile: CXXFLAGS = -O0 -g -pg $(COMMON_FLAGS) -fno-inline
-profile: LDFLAGS = -g -pg
+profile: CXXFLAGS = -O0 -g $(COMMON_FLAGS) -fno-inline
+profile: LDFLAGS = -g
      
 
 # The final build step.

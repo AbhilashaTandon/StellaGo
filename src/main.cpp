@@ -8,10 +8,10 @@
 
 void stress_test()
 {
-    for (int i = 0; i < 20; i++)
+    for (int i = 0; i < 100; i++)
     {
         Game g = Game(BOARDSIZE);
-        for (int i = 0; i < 1000; i++)
+        for (int j = 0; j < 1000; j++)
         {
             g.make_play(rand() % BOARDSIZE, rand() % BOARDSIZE);
         }
