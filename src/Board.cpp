@@ -21,6 +21,7 @@ Board::Board()
     }
 
     this->directions = {-BOARD_SIZE - 2, -1, BOARD_SIZE + 2, 1};
+    this->diagonals = {-BOARD_SIZE - 3, -BOARD_SIZE - 1, BOARD_SIZE + 1, BOARD_SIZE + 3};
 
     zobrist = 0; // empty board state
 
@@ -56,6 +57,7 @@ Board::Board(const Board &b)
     this->black_count = b.black_count;
     this->white_count = b.white_count;
     this->empty_count = b.empty_count;
+    this->play_count = b.play_count;
     this->black_ko_hash = b.black_ko_hash;
     this->white_ko_hash = b.white_ko_hash;
     this->chain_liberties = b.chain_liberties;
@@ -63,7 +65,7 @@ Board::Board(const Board &b)
     this->chain_sizes = b.chain_sizes;
 }
 
-uint16_t Board::get_liberties(uint16_t idx)
+uint16_t Board::get_liberties(uint16_t idx) const
 {
     uint16_t num_liberties = 0;
     for (uint16_t i = 0; i < 4; i++)
@@ -76,7 +78,7 @@ uint16_t Board::get_liberties(uint16_t idx)
     return num_liberties;
 }
 
-void Board::print_board()
+void Board::print_board() const
 {
     for (uint16_t i = 0; i < (BOARD_SIZE + 2); i++)
     {
@@ -102,6 +104,7 @@ void Board::print_board()
         std::cout << std::endl;
     }
     std::cout << std::endl;
+#if DEBUG
     std::cout << "Chain Roots" << std::endl;
     std::cout << std::endl;
 
@@ -175,20 +178,24 @@ void Board::print_board()
                 break;
             }
         }
-
         std::cout << std::endl;
     }
+#endif
 }
 
-uint64_t Board::get_hash()
+uint64_t Board::get_hash() const
 {
     return zobrist;
 }
 
-bool Board::make_play(uint16_t x, uint16_t y)
+bool Board::make_play(uint16_t idx)
 {
+    if (idx == PASS)
+    {
+        play_count++;
+        return true;
+    }
     bool color_to_move = whose_turn();
-    uint16_t idx = coords_to_idx(x, y);
 
     if (check_play(idx))
     {
@@ -213,17 +220,17 @@ bool Board::make_play(uint16_t x, uint16_t y)
     return false;
 }
 
-bool Board::whose_turn()
+bool Board::whose_turn() const
 {
     return (play_count & 1) == 0;
 }
 
-uint16_t Board::get_play_count()
+uint16_t Board::get_play_count() const
 {
     return play_count;
 }
 
-void Board::check_for_errors()
+void Board::check_for_errors() const
 {
     std::array<uint16_t, NUM_POINTS> liberties_check{};
     std::array<uint16_t, NUM_POINTS> sizes_check{};
@@ -231,6 +238,8 @@ void Board::check_for_errors()
     {
         switch (board[i])
         {
+        case pointType::BLANK:
+            break;
         case pointType::BLACK:
         case pointType::WHITE:
             sizes_check[chain_roots[i]]++;
@@ -238,7 +247,6 @@ void Board::check_for_errors()
             assert(chain_roots[i] != 0);
             if (chain_liberties[chain_roots[i]] == 0)
             {
-                std::cout << "no libs " << i << " " << chain_roots[i] << " " << chain_liberties[chain_roots[i]] << '\n';
                 assert(false);
             }
             assert(chain_sizes[chain_roots[i]] != 0);
@@ -281,12 +289,10 @@ void Board::check_for_errors()
         // std::cout << i << " " << sizes_check[i] << " " << chain_sizes[i] << '\n';
         if (liberties_check[i] != chain_liberties[i])
         {
-            std::cout << "libs " << i << " " << liberties_check[i] << " " << chain_liberties[i] << '\n';
             assert(false);
         }
         if (sizes_check[i] != chain_sizes[i])
         {
-            std::cout << "size " << i << " " << sizes_check[i] << " " << chain_sizes[i] << '\n';
 
             assert(false);
         }
