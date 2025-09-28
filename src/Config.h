@@ -1,5 +1,5 @@
-#define DEBUG true
-#define PROFILE false
+#define DEBUG false
+#define PROFILE true
 
 static constexpr auto BOARD_SIZE = 5;
 

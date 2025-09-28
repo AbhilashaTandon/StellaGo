@@ -4,17 +4,17 @@
 #include <ctime>
 #include <iostream>
 
-// void stress_test()
-// {
-//     for (int i = 0; i < 20; i++)
-//     {
-//         Game g = Game(BOARDSIZE);
-//         for (int i = 0; i < 1000; i++)
-//         {
-//             g.make_play(rand() % BOARDSIZE, rand() % BOARDSIZE);
-//         }
-//     }
-// }
+void stress_test()
+{
+    for (int i = 0; i < 100; i++)
+    {
+        Board b = Board();
+        for (int j = 0; j < 1000; j++)
+        {
+            b.make_play(rand() % BOARD_SIZE, rand() % BOARD_SIZE);
+        }
+    }
+}
 
 int main()
 {
@@ -29,17 +29,16 @@ int main()
     //         g.print_board();
     //     }
     // }
-    std::cout << "Hello anyone there?" << std::endl;
-    // #if DEBUG
+#if DEBUG
     Board g = Board();
     for (int i = 0; i < 10000; i++)
     {
         g.make_play(rand() % BOARD_SIZE, rand() % BOARD_SIZE);
     }
-    // #endif
-    // #if PROFILE
-    //     stress_test();
-    // #endif
+#endif
+#if PROFILE
+    stress_test();
+#endif
 
     return 0;
 }
