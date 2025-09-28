@@ -3,7 +3,8 @@
 #include "Config.h"
 
 #include <cstdint>
-#include <vector>
+// #include <vector>
+#include <array>
 #include <cassert>
 
 enum pointType
@@ -15,9 +16,9 @@ enum pointType
 };
 
 #define NORTH 1        // 00000001
-#define EAST (1 << 1)  // 00000010
+#define WEST (1 << 1)  // 00000010
 #define SOUTH (1 << 2) // 00000100
-#define WEST (1 << 3)  // 00001000
+#define EAST (1 << 3)  // 00001000
 #define COUNT (7 << 4) // 01110000
 
 struct nbrs
@@ -32,29 +33,56 @@ class Board
 {
 
 public:
-    Board(int boardsize);
+    Board();
     Board(const Board &b);
-    pointType get_point(int idx);
-    void set_point(int idx, pointType value);
-    int get_liberties(int idx);
-    // bool is_starpoint(int x, int y);
+
+    bool make_play(uint16_t x, uint16_t y);
+    bool whose_turn();
+    uint16_t get_play_count();
     void print_board();
-    nbrs get_nbrs(int idx);
-    int coords_to_idx(int x, int y);
-    std::vector<int> directions;
-    // TODO: could this be an array
-    std::pair<int, int> idx_to_coords(int idx);
-    uint64_t get_hash();
-    int white_count;
-    int black_count;
-    int empty_count;
+    void check_for_errors();
 
 protected:
-    std::vector<pointType> board;
-    int boardsize;
+    std::array<pointType, NUM_POINTS> board{};
+
     uint64_t zobrist;
-    std::vector<uint64_t> zobrist_hashes_black;
-    std::vector<uint64_t> zobrist_hashes_white;
+    std::array<uint64_t, NUM_POINTS> zobrist_hashes_black{};
+    std::array<uint64_t, NUM_POINTS> zobrist_hashes_white{};
+
+    std::array<uint16_t, NUM_POINTS> chain_roots{};
+    // start of chain list
+    std::array<uint16_t, NUM_POINTS> chain_liberties{}; // only defined for locations that are roots
+    std::array<uint16_t, NUM_POINTS> chain_sizes{};     // also only defined for roots, num stones for chain
+
+    uint16_t white_count;
+    uint16_t black_count;
+    uint16_t empty_count;
+
+    void set_point(uint16_t idx, pointType value);
+
+    bool check_play(uint16_t idx);
+    bool is_suicide(uint16_t idx);
+    void update_chains(uint16_t idx);
+
+    void create_chain(uint16_t idx);
+    void extend_chain(uint16_t idx, uint16_t adj_stone);
+    void merge_chains(std::array<uint16_t, 4> chain_neighbors, uint16_t num_chains, uint16_t idx);
+    void capture_chain(uint16_t chain_id);
+
+    nbrs get_nbrs(uint16_t idx);
+    uint64_t get_hash();
+    pointType get_point(uint16_t idx);
+    uint16_t get_liberties(uint16_t idx);
+
+    uint16_t coords_to_idx(uint16_t x, uint16_t y);
+    std::array<int, 4> directions;
+    std::pair<int, int> idx_to_coords(uint16_t idx);
+
+    uint16_t play_count;
+    uint64_t black_ko_hash;
+    uint64_t white_ko_hash;
+
+    void check_position(uint16_t idx);
 };
 
 #endif

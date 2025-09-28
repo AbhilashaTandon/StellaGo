@@ -4,21 +4,23 @@
 
 #include "Board.h"
 
-Board::Board(int board_size) : boardsize(board_size)
+Board::Board()
 {
-    this->boardsize = board_size;
-    this->board = std::vector<pointType>((board_size + 2) * (board_size + 2), pointType::EMPTY);
+    for (uint16_t i = 0; i < NUM_POINTS; i++)
+    {
+        this->board[i] = pointType::EMPTY;
+    }
 
-    for (int i = 0; i < board_size + 1; i++)
+    for (uint16_t i = 0; i < BOARD_SIZE + 1; i++)
     {
         // add in edges of board
         board[i + 1] = pointType::BLANK;
-        board[(i) * (board_size + 2)] = pointType::BLANK;
-        board[(board_size + 1) * (board_size + 2) + i] = pointType::BLANK;
-        board[(i + 1) * (board_size + 2) + (board_size + 1)] = pointType::BLANK;
+        board[(i) * (BOARD_SIZE + 2)] = pointType::BLANK;
+        board[(BOARD_SIZE + 1) * (BOARD_SIZE + 2) + i] = pointType::BLANK;
+        board[(i + 1) * (BOARD_SIZE + 2) + (BOARD_SIZE + 1)] = pointType::BLANK;
     }
 
-    this->directions = {-boardsize - 2, -1, boardsize + 2, 1};
+    this->directions = {-BOARD_SIZE - 2, -1, BOARD_SIZE + 2, 1};
 
     zobrist = 0; // empty board state
 
@@ -29,22 +31,24 @@ Board::Board(int board_size) : boardsize(board_size)
 
     std::uniform_int_distribution<long long int> dist(std::llround(std::pow(2, 61)), std::llround(std::pow(2, 62)));
 
-    for (int i = 0; i < (boardsize + 2) * (boardsize + 2); i++)
+    for (uint16_t i = 0; i < NUM_POINTS; i++)
     {
-        zobrist_hashes_black.push_back(dist(e2));
-        zobrist_hashes_white.push_back(dist(e2));
+        zobrist_hashes_black[i] = dist(e2);
+        zobrist_hashes_white[i] = dist(e2);
     }
 
     black_count = 0;
     white_count = 0;
-    empty_count = (board_size) * (board_size);
+    empty_count = (BOARD_SIZE) * (BOARD_SIZE);
+
+    play_count = 0;
+    black_ko_hash = 0;
+    white_ko_hash = 0;
 }
 
 Board::Board(const Board &b)
 {
-    this->boardsize = b.boardsize;
     this->board = b.board;
-
     this->directions = b.directions;
     this->zobrist = b.zobrist;
     this->zobrist_hashes_black = b.zobrist_hashes_black;
@@ -52,61 +56,17 @@ Board::Board(const Board &b)
     this->black_count = b.black_count;
     this->white_count = b.white_count;
     this->empty_count = b.empty_count;
+    this->black_ko_hash = b.black_ko_hash;
+    this->white_ko_hash = b.white_ko_hash;
+    this->chain_liberties = b.chain_liberties;
+    this->chain_roots = b.chain_roots;
+    this->chain_sizes = b.chain_sizes;
 }
 
-pointType Board::get_point(int idx)
+uint16_t Board::get_liberties(uint16_t idx)
 {
-    return board[idx];
-}
-
-void Board::set_point(int idx, pointType value)
-{
-    pointType current_state = board[idx];
-#if DEBUG
-    assert(value != pointType::BLANK);
-    assert(current_state != value);
-    assert(!(current_state == BLACK && value == WHITE));
-    assert(!(current_state == WHITE && value == BLACK));
-#endif
-
-    // xor to erase stone
-    zobrist ^= (zobrist_hashes_black[idx]) * (current_state == pointType::BLACK && value == pointType::EMPTY);
-
-    zobrist ^= (zobrist_hashes_white[idx]) * (current_state == pointType::WHITE && value == pointType::EMPTY);
-
-    // xor to add stone
-    zobrist ^= (zobrist_hashes_black[idx]) * (value == pointType::BLACK);
-    zobrist ^= (zobrist_hashes_white[idx]) * (value == pointType::WHITE);
-
-    board[idx] = value;
-
-    switch (current_state)
-    {
-    case pointType::EMPTY:
-        black_count += (value == pointType::BLACK);
-        white_count += (value == pointType::WHITE);
-        empty_count--;
-        break;
-    case pointType::BLACK:
-        black_count--;
-        empty_count++;
-        break;
-    case pointType::WHITE:
-        white_count--;
-        empty_count++;
-        break;
-
-        //     default:
-        // #if DEBUG
-        //         assert(false);
-        // #endif
-    }
-}
-
-int Board::get_liberties(int idx)
-{
-    int num_liberties = 0;
-    for (int i = 0; i < 4; i++)
+    uint16_t num_liberties = 0;
+    for (uint16_t i = 0; i < 4; i++)
     {
         if (board[idx + directions[i]] == pointType::EMPTY)
         {
@@ -118,11 +78,11 @@ int Board::get_liberties(int idx)
 
 void Board::print_board()
 {
-    for (int i = 0; i < (boardsize + 2); i++)
+    for (uint16_t i = 0; i < (BOARD_SIZE + 2); i++)
     {
-        for (int j = 0; j < (boardsize + 2); j++)
+        for (uint16_t j = 0; j < (BOARD_SIZE + 2); j++)
         {
-            switch (board[i * (boardsize + 2) + j])
+            switch (board[i * (BOARD_SIZE + 2) + j])
             {
             case pointType::BLANK:
                 std::cout << "# ";
@@ -141,72 +101,194 @@ void Board::print_board()
 
         std::cout << std::endl;
     }
-}
+    std::cout << std::endl;
+    std::cout << "Chain Roots" << std::endl;
+    std::cout << std::endl;
 
-nbrs Board::get_nbrs(int idx)
-{
-    nbrs n;
-    n.edges = 0;
-    n.liberties = 0;
-    n.black = 0;
-    n.white = 0;
-    uint8_t num_edges = 0;
-    uint8_t num_libs = 0;
-    uint8_t num_black = 0;
-    uint8_t num_white = 0;
-
-    for (uint8_t i = 0; i < 4; i++)
+    for (uint16_t i = 0; i < (BOARD_SIZE + 2); i++)
     {
-        switch (board[idx + directions[i]])
+        for (uint16_t j = 0; j < (BOARD_SIZE + 2); j++)
         {
-        case pointType::BLANK:
-            num_edges++;
-            n.edges |= uint8_t(1 << i);
-            break;
-        case pointType::EMPTY:
-            num_libs++;
-            n.liberties |= uint8_t(1 << i);
-            break;
-        case pointType::BLACK:
-            num_black++;
-            n.black |= uint8_t(1 << i);
-            break;
-        case pointType::WHITE:
-            num_white++;
-            n.white |= uint8_t(1 << i);
-            break;
+            switch (board[i * (BOARD_SIZE + 2) + j])
+            {
+            case pointType::BLANK:
+                std::cout << " # ";
+                break;
+            case pointType::EMPTY:
+                std::cout << "   ";
+                break;
+            case pointType::BLACK:
+            case pointType::WHITE:
+                printf("%3d", chain_roots[i * (BOARD_SIZE + 2) + j]);
+                break;
+            }
         }
+
+        std::cout << std::endl;
     }
 
-#if DEBUG
-    assert((num_edges + num_libs + num_black + num_white) == 4);
-#endif
+    std::cout << std::endl;
+    std::cout << "Chain Liberties" << std::endl;
+    std::cout << std::endl;
 
-    n.edges |= uint8_t(num_edges << 4);
-    n.liberties |= uint8_t(num_libs << 4);
-    n.black |= uint8_t(num_black << 4);
-    n.white |= uint8_t(num_white << 4);
-    return n;
-}
+    for (uint16_t i = 0; i < (BOARD_SIZE + 2); i++)
+    {
+        for (uint16_t j = 0; j < (BOARD_SIZE + 2); j++)
+        {
+            switch (board[i * (BOARD_SIZE + 2) + j])
+            {
+            case pointType::BLANK:
+                std::cout << " # ";
+                break;
+            case pointType::EMPTY:
+                std::cout << "   ";
+                break;
+            case pointType::BLACK:
+            case pointType::WHITE:
+                printf("%3d", chain_liberties[i * (BOARD_SIZE + 2) + j]);
+                break;
+            }
+        }
 
-int Board::coords_to_idx(int x, int y)
-{
-#if DEBUG
-    assert(x >= 0 && x < boardsize);
-    assert(y >= 0 && y < boardsize);
-#endif
-    return (boardsize + 2) * (y + 1) + x + 1;
-}
+        std::cout << std::endl;
+    }
 
-std::pair<int, int> Board::idx_to_coords(int idx)
-{
-#if DEBUG
-    assert(idx >= 0 && (unsigned int)idx < board.size());
-#endif
-    return std::pair<int, int>(idx / (boardsize + 2) - 1, idx % (boardsize + 2) - 1);
+    std::cout << std::endl;
+    std::cout << "Chain Sizes" << std::endl;
+    std::cout << std::endl;
+
+    for (uint16_t i = 0; i < (BOARD_SIZE + 2); i++)
+    {
+        for (uint16_t j = 0; j < (BOARD_SIZE + 2); j++)
+        {
+            switch (board[i * (BOARD_SIZE + 2) + j])
+            {
+            case pointType::BLANK:
+                std::cout << " # ";
+                break;
+            case pointType::EMPTY:
+                std::cout << "   ";
+                break;
+            case pointType::BLACK:
+            case pointType::WHITE:
+                printf("%3d", chain_sizes[i * (BOARD_SIZE + 2) + j]);
+                break;
+            }
+        }
+
+        std::cout << std::endl;
+    }
 }
 
 uint64_t Board::get_hash()
 {
     return zobrist;
+}
+
+bool Board::make_play(uint16_t x, uint16_t y)
+{
+    bool color_to_move = whose_turn();
+    uint16_t idx = coords_to_idx(x, y);
+
+    if (check_play(idx))
+    {
+        // print_board();
+        update_chains(idx);
+        set_point(idx, color_to_move ? pointType::BLACK : pointType::WHITE);
+        play_count++;
+        if (color_to_move)
+        {
+            black_ko_hash = get_hash();
+        }
+        else
+        {
+            white_ko_hash = get_hash();
+        }
+#if DEBUG
+        print_board();
+        check_for_errors();
+#endif
+        return true;
+    }
+    return false;
+}
+
+bool Board::whose_turn()
+{
+    return (play_count & 1) == 0;
+}
+
+uint16_t Board::get_play_count()
+{
+    return play_count;
+}
+
+void Board::check_for_errors()
+{
+    std::array<uint16_t, NUM_POINTS> liberties_check{};
+    std::array<uint16_t, NUM_POINTS> sizes_check{};
+    for (uint16_t i = 0; i < NUM_POINTS; i++)
+    {
+        switch (board[i])
+        {
+        case pointType::BLACK:
+        case pointType::WHITE:
+            sizes_check[chain_roots[i]]++;
+
+            assert(chain_roots[i] != 0);
+            if (chain_liberties[chain_roots[i]] == 0)
+            {
+                std::cout << "no libs " << i << " " << chain_roots[i] << " " << chain_liberties[chain_roots[i]] << '\n';
+                assert(false);
+            }
+            assert(chain_sizes[chain_roots[i]] != 0);
+            break;
+        case pointType::EMPTY:
+            std::array<uint16_t, 4> past_chains{};
+            uint16_t num_past_chains = 0;
+
+            for (uint16_t d = 0; d < 4; d++)
+            {
+                uint16_t chain_id = chain_roots[i + directions[d]];
+                if (chain_id != 0)
+                {
+
+                    bool dupl = false;
+                    for (uint16_t x = 0; x < num_past_chains; x++)
+                    {
+                        if (past_chains[x] == chain_id)
+                        {
+                            dupl = true;
+                            break;
+                        }
+                    }
+
+                    if (!dupl)
+                    {
+                        past_chains[num_past_chains] = chain_id;
+                        num_past_chains++;
+                        // std::cout << i << " " << chain_roots[i + directions[d]] << '\n';
+                        liberties_check[chain_roots[i + directions[d]]]++;
+                    }
+                }
+            }
+            break;
+        }
+    }
+    for (uint16_t i = 0; i < NUM_POINTS; i++)
+    {
+        // std::cout << i << " " << liberties_check[i] << " " << chain_liberties[i] << '\n';
+        // std::cout << i << " " << sizes_check[i] << " " << chain_sizes[i] << '\n';
+        if (liberties_check[i] != chain_liberties[i])
+        {
+            std::cout << "libs " << i << " " << liberties_check[i] << " " << chain_liberties[i] << '\n';
+            assert(false);
+        }
+        if (sizes_check[i] != chain_sizes[i])
+        {
+            std::cout << "size " << i << " " << sizes_check[i] << " " << chain_sizes[i] << '\n';
+
+            assert(false);
+        }
+    }
 }

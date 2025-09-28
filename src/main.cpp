@@ -1,19 +1,17 @@
 #include "Board.h"
-#include "Game.h"
 #include <cstdio>
 #include <random>
 #include <ctime>
-
-#define BOARDSIZE 19
+#include <iostream>
 
 void stress_test()
 {
-    for (int i = 0; i < 100; i++)
+    for (int i = 0; i < 10000; i++)
     {
-        Game g = Game(BOARDSIZE);
+        Board b = Board();
         for (int j = 0; j < 1000; j++)
         {
-            g.make_play(rand() % BOARDSIZE, rand() % BOARDSIZE);
+            b.make_play(rand() % BOARD_SIZE, rand() % BOARD_SIZE);
         }
     }
 }
@@ -31,21 +29,18 @@ int main()
     //         g.print_board();
     //     }
     // }
+    std::cout << "Hello anyone there?" << std::endl;
 #if DEBUG
-    Game g = Game(BOARDSIZE);
+    Board g = Board();
     for (int i = 0; i < 10000; i++)
     {
-        if (g.make_play(rand() % BOARDSIZE, rand() % BOARDSIZE))
-        {
-            g.print_board();
-
-            g.check_for_errors();
-        }
+        g.make_play(rand() % BOARD_SIZE, rand() % BOARD_SIZE);
     }
 #endif
 #if PROFILE
     stress_test();
 #endif
 
+    std::cout << "Hello anyone there?" << std::endl;
     return 0;
 }
