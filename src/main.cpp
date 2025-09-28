@@ -6,7 +6,7 @@
 
 void stress_test()
 {
-    for (int i = 0; i < 100; i++)
+    for (int i = 0; i < 10000; i++)
     {
         Board b = Board();
         for (int j = 0; j < 1000; j++)
@@ -29,6 +29,7 @@ int main()
     //         g.print_board();
     //     }
     // }
+    std::cout << "Hello anyone there?" << std::endl;
 #if DEBUG
     Board g = Board();
     for (int i = 0; i < 10000; i++)
@@ -40,5 +41,6 @@ int main()
     stress_test();
 #endif
 
+    std::cout << "Hello anyone there?" << std::endl;
     return 0;
 }

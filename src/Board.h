@@ -16,9 +16,9 @@ enum pointType
 };
 
 #define NORTH 1        // 00000001
-#define EAST (1 << 1)  // 00000010
+#define WEST (1 << 1)  // 00000010
 #define SOUTH (1 << 2) // 00000100
-#define WEST (1 << 3)  // 00001000
+#define EAST (1 << 3)  // 00001000
 #define COUNT (7 << 4) // 01110000
 
 struct nbrs
@@ -51,8 +51,6 @@ protected:
 
     std::array<uint16_t, NUM_POINTS> chain_roots{};
     // start of chain list
-    // TODO: consider having an array of all nodes of each chain
-    // i could keep track of the first and last nodes of each list of nodes in a chain, that way i could add to the end like a linked list
     std::array<uint16_t, NUM_POINTS> chain_liberties{}; // only defined for locations that are roots
     std::array<uint16_t, NUM_POINTS> chain_sizes{};     // also only defined for roots, num stones for chain
 
