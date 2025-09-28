@@ -1,7 +1,6 @@
 #ifndef BOARD_H
 #define BOARD_H
-
-#define DEBUG true
+#include "Config.h"
 
 #include <cstdint>
 #include <vector>

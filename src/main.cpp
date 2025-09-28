@@ -8,7 +8,7 @@
 
 void stress_test()
 {
-    for (int i = 0; i < 10000; i++)
+    for (int i = 0; i < 20; i++)
     {
         Game g = Game(BOARDSIZE);
         for (int i = 0; i < 1000; i++)
@@ -31,7 +31,7 @@ int main()
     //         g.print_board();
     //     }
     // }
-
+#if DEBUG
     Game g = Game(BOARDSIZE);
     for (int i = 0; i < 10000; i++)
     {
@@ -42,7 +42,10 @@ int main()
             g.check_for_errors();
         }
     }
-    // stress_test();
+#endif
+#if PROFILE
+    stress_test();
+#endif
 
     return 0;
 }
