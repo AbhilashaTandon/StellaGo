@@ -4,11 +4,9 @@
 
 #include "Board.h"
 
-bool Board::check_play(uint16_t idx)
+bool Board::check_play(uint16_t idx) const
 {
     bool color_to_move = whose_turn();
-
-    struct nbrs neighbors = get_nbrs(idx);
 
     if (board[idx] != pointType::EMPTY)
     {
@@ -41,7 +39,7 @@ bool Board::check_play(uint16_t idx)
     }
 }
 
-bool Board::is_suicide(uint16_t idx)
+bool Board::is_suicide(uint16_t idx) const
 {
     // check if move is suicide
     // if all neighboring opposite color chains have at least 2 liberties (one for stone to be added and another one for safety, they cant be captured)

@@ -5,7 +5,7 @@
 
 #include "Board.h"
 
-uint16_t Board::coords_to_idx(uint16_t x, uint16_t y)
+uint16_t Board::coords_to_idx(uint16_t x, uint16_t y) const
 {
 #if DEBUG
     assert(x >= 0 && x < BOARD_SIZE);
@@ -13,7 +13,7 @@ uint16_t Board::coords_to_idx(uint16_t x, uint16_t y)
 #endif
     return (BOARD_SIZE + 2) * (y + 1) + x + 1;
 }
-std::pair<int, int> Board::idx_to_coords(uint16_t idx)
+std::pair<int, int> Board::idx_to_coords(uint16_t idx) const
 {
 #if DEBUG
     assert(idx >= 0 && (unsigned int)idx < board.size());
@@ -21,14 +21,19 @@ std::pair<int, int> Board::idx_to_coords(uint16_t idx)
     return std::pair<int, int>(idx / (BOARD_SIZE + 2) - 1, idx % (BOARD_SIZE + 2) - 1);
 }
 
-void Board::check_position(uint16_t idx)
+void Board::check_position(uint16_t idx) const
 {
     assert(chain_roots[idx] != 0);
     assert(chain_liberties[chain_roots[idx]] != 0);
     assert(chain_sizes[chain_roots[idx]] != 0);
 }
 
-pointType Board::get_point(uint16_t idx)
+int16_t Board::stone_score() const
+{
+    return int16_t(black_count) - int16_t(white_count) - komi;
+}
+
+pointType Board::get_point(uint16_t idx) const
 {
     return board[idx];
 }
@@ -112,7 +117,7 @@ void Board::set_point(uint16_t idx, pointType value)
     }
 }
 
-nbrs Board::get_nbrs(uint16_t idx)
+nbrs Board::get_nbrs(uint16_t idx) const
 {
     nbrs n;
     n.edges = 0;
