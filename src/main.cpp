@@ -3,18 +3,19 @@
 #include <random>
 #include <ctime>
 #include <iostream>
+#include "Agent.h"
 
-void stress_test()
-{
-    for (int i = 0; i < 10000; i++)
-    {
-        Board b = Board();
-        for (int j = 0; j < 1000; j++)
-        {
-            b.make_play(rand() % BOARD_SIZE, rand() % BOARD_SIZE);
-        }
-    }
-}
+// void stress_test()
+// {
+//     for (int i = 0; i < 10000; i++)
+//     {
+//         Board b = Board();
+//         for (int j = 0; j < 1000; j++)
+//         {
+//             b.make_play(rand() % BOARD_SIZE, rand() % BOARD_SIZE);
+//         }
+//     }
+// }
 
 int main()
 {
@@ -29,18 +30,20 @@ int main()
     //         g.print_board();
     //     }
     // }
-    std::cout << "Hello anyone there?" << std::endl;
-#if DEBUG
-    Board g = Board();
-    for (int i = 0; i < 10000; i++)
-    {
-        g.make_play(rand() % BOARD_SIZE, rand() % BOARD_SIZE);
-    }
-#endif
-#if PROFILE
-    stress_test();
-#endif
+    //     std::cout << "Hello anyone there?" << std::endl;
+    // #if DEBUG
+    //     Board g = Board();
+    //     for (int i = 0; i < 10000; i++)
+    //     {
+    //         g.make_play(rand() % BOARD_SIZE, rand() % BOARD_SIZE);
+    //     }
+    // #endif
+    // #if PROFILE
+    //     stress_test();
+    // #endif
 
-    std::cout << "Hello anyone there?" << std::endl;
-    return 0;
+    //     std::cout << "Hello anyone there?" << std::endl;
+    //     return 0;
+    Agent a = Agent();
+    a.play(3, 1000);
 }

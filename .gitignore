@@ -9,3 +9,4 @@ src/Game.h
 valgrind_profile.txt
 callgrind.txt
 callgrind_profile.txt
+game.txt
