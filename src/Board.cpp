@@ -4,21 +4,23 @@
 
 #include "Board.h"
 
-Board::Board(int board_size) : boardsize(board_size)
+Board::Board()
 {
-    this->boardsize = board_size;
-    this->board = std::vector<pointType>((board_size + 2) * (board_size + 2), pointType::EMPTY);
+    for (uint16_t i = 0; i < NUM_POINTS; i++)
+    {
+        this->board[i] = pointType::EMPTY;
+    }
 
-    for (int i = 0; i < board_size + 1; i++)
+    for (uint16_t i = 0; i < BOARD_SIZE + 1; i++)
     {
         // add in edges of board
         board[i + 1] = pointType::BLANK;
-        board[(i) * (board_size + 2)] = pointType::BLANK;
-        board[(board_size + 1) * (board_size + 2) + i] = pointType::BLANK;
-        board[(i + 1) * (board_size + 2) + (board_size + 1)] = pointType::BLANK;
+        board[(i) * (BOARD_SIZE + 2)] = pointType::BLANK;
+        board[(BOARD_SIZE + 1) * (BOARD_SIZE + 2) + i] = pointType::BLANK;
+        board[(i + 1) * (BOARD_SIZE + 2) + (BOARD_SIZE + 1)] = pointType::BLANK;
     }
 
-    this->directions = {-boardsize - 2, -1, boardsize + 2, 1};
+    this->directions = {-BOARD_SIZE - 2, -1, BOARD_SIZE + 2, 1};
 
     zobrist = 0; // empty board state
 
@@ -29,22 +31,24 @@ Board::Board(int board_size) : boardsize(board_size)
 
     std::uniform_int_distribution<long long int> dist(std::llround(std::pow(2, 61)), std::llround(std::pow(2, 62)));
 
-    for (int i = 0; i < (boardsize + 2) * (boardsize + 2); i++)
+    for (uint16_t i = 0; i < NUM_POINTS; i++)
     {
-        zobrist_hashes_black.push_back(dist(e2));
-        zobrist_hashes_white.push_back(dist(e2));
+        zobrist_hashes_black[i] = dist(e2);
+        zobrist_hashes_white[i] = dist(e2);
     }
 
     black_count = 0;
     white_count = 0;
-    empty_count = (board_size) * (board_size);
+    empty_count = (BOARD_SIZE) * (BOARD_SIZE);
+
+    play_count = 0;
+    black_ko_hash = 0;
+    white_ko_hash = 0;
 }
 
 Board::Board(const Board &b)
 {
-    this->boardsize = b.boardsize;
     this->board = b.board;
-
     this->directions = b.directions;
     this->zobrist = b.zobrist;
     this->zobrist_hashes_black = b.zobrist_hashes_black;
@@ -52,14 +56,42 @@ Board::Board(const Board &b)
     this->black_count = b.black_count;
     this->white_count = b.white_count;
     this->empty_count = b.empty_count;
+    this->black_ko_hash = b.black_ko_hash;
+    this->white_ko_hash = b.white_ko_hash;
+    this->chain_liberties = b.chain_liberties;
+    this->chain_roots = b.chain_roots;
+    this->chain_sizes = b.chain_sizes;
 }
 
-pointType Board::get_point(int idx)
+uint16_t Board::coords_to_idx(uint16_t x, uint16_t y)
+{
+#if DEBUG
+    assert(x >= 0 && x < BOARD_SIZE);
+    assert(y >= 0 && y < BOARD_SIZE);
+#endif
+    return (BOARD_SIZE + 2) * (y + 1) + x + 1;
+}
+std::pair<int, int> Board::idx_to_coords(uint16_t idx)
+{
+#if DEBUG
+    assert(idx >= 0 && (unsigned int)idx < board.size());
+#endif
+    return std::pair<int, int>(idx / (BOARD_SIZE + 2) - 1, idx % (BOARD_SIZE + 2) - 1);
+}
+
+void Board::check_position(uint16_t idx)
+{
+    assert(chain_roots[idx] != 0);
+    assert(chain_liberties[chain_roots[idx]] != 0);
+    assert(chain_sizes[chain_roots[idx]] != 0);
+}
+
+pointType Board::get_point(uint16_t idx)
 {
     return board[idx];
 }
 
-void Board::set_point(int idx, pointType value)
+void Board::set_point(uint16_t idx, pointType value)
 {
     pointType current_state = board[idx];
 #if DEBUG
@@ -95,18 +127,290 @@ void Board::set_point(int idx, pointType value)
         white_count--;
         empty_count++;
         break;
+    case BLANK:
+        assert(false);
+        break;
 
         //     default:
         // #if DEBUG
         //         assert(false);
         // #endif
     }
+
+    if (value == pointType::EMPTY)
+    {
+        std::array<int, 4> prev_chains{};
+        uint16_t prev_chain_count = 0;
+        for (uint16_t i = 0; i < 4; i++)
+        {
+            uint16_t neighbor = idx + directions[i];
+            if (chain_roots[neighbor] != 0)
+            {
+                uint16_t chain_id = chain_roots[neighbor];
+
+                bool dupl = false;
+                for (uint16_t x = 0; x < prev_chain_count; x++)
+
+                {
+                    if (prev_chains[x] == chain_id)
+                    {
+                        dupl = true;
+                        break;
+                    }
+                }
+
+                if (!dupl)
+                {
+                    prev_chains[prev_chain_count] = chain_id;
+                    prev_chain_count++;
+                    chain_liberties[chain_id]++;
+                }
+            }
+        }
+    }
 }
 
-int Board::get_liberties(int idx)
+bool Board::check_play(uint16_t idx)
 {
-    int num_liberties = 0;
-    for (int i = 0; i < 4; i++)
+    bool color_to_move = whose_turn();
+
+    struct nbrs neighbors = get_nbrs(idx);
+
+    if (board[idx] != pointType::EMPTY)
+    {
+        return false;
+    }
+
+    // printf("%d %d ", idx);
+    // printf("%d %d %d %d\n", (neighbors.liberties & COUNT) >> 4, (neighbors.black & COUNT) >> 4, (neighbors.white & COUNT) >> 4, (neighbors.edges & COUNT) >> 4);
+
+    if ((neighbors.liberties & COUNT) == 0)
+    {
+
+        if (is_suicide(idx))
+        {
+            return false;
+        }
+    }
+
+    // ko checking
+
+    Board copy = *this;
+    print_board();
+    copy.update_chains(idx);
+
+    if (color_to_move)
+    {
+        // black to move
+        copy.set_point(idx, pointType::BLACK);
+        // printf("\n\nlast position: %lx, possible next pos: %lx\n\n", black_ko_hash, copy.b.get_hash());
+        return black_ko_hash != copy.get_hash();
+        // if hashes are different not a repeat (except in case of hash collision ig)
+    }
+    else
+    {
+        // white to move
+        copy.set_point(idx, pointType::WHITE);
+        // printf("\n\nlast position: %lx, possible next pos: %lx\n\n", white_ko_hash, copy.b.get_hash());
+        return white_ko_hash != copy.get_hash();
+        // if hashes are different not a repeat (except in case of hash collision ig)
+    }
+}
+
+bool Board::is_suicide(uint16_t idx)
+{
+    // check if move is suicide
+    // if all neighboring opposite color chains have at least 2 liberties (one for stone to be added and another one for safety, they cant be captured)
+    //
+    // and no neighboring same color chain has at least 2 liberties (one for stone to be added, it can be captured) then it is suicide
+
+    // if a neighboring opposite color chain has < 2 liberties or a neighboring same color chain has > 1 liberties then it is not suicide
+
+    bool color_to_move = whose_turn();
+
+    for (uint16_t i = 0; i < 4; i++)
+    {
+        if (board[idx + directions[i]] == pointType::BLANK)
+        {
+            continue;
+        }
+        uint16_t chain_id = chain_roots[idx + directions[i]];
+        if (chain_id == 0)
+        {
+            // if there's a liberty its not suicide
+            // printf("has liberty");
+            return false;
+        }
+        if (color_to_move == (chain_id > 0))
+        { // same color chain
+            if (chain_liberties[chain_id] > 1)
+            {
+                // printf("extension to alive chain");
+                return false;
+            }
+        }
+        else
+        // diff color chain
+        {
+            if (chain_liberties[chain_id] < 2)
+            {
+                // printf("capture of dead chain");
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
+void Board::create_chain(uint16_t idx)
+{
+    chain_roots[idx] = idx;
+    chain_liberties[idx] = get_liberties(idx);
+    chain_sizes[idx] = 1;
+}
+
+void Board::extend_chain(uint16_t idx, uint16_t adj_stone)
+{
+    uint16_t chain_id = chain_roots[adj_stone];
+    chain_roots[idx] = chain_id;
+    chain_sizes[chain_id]++;
+    chain_liberties[chain_id]--;
+
+    for (uint16_t i = 0; i < 4; i++)
+    {
+        if (board[idx + directions[i]] == pointType::EMPTY)
+        // for each liberty of the new stone
+        {
+            bool already_counted = false;
+            for (uint16_t j = 0; j < 4; j++)
+            {
+                if (directions[i] + directions[j] == 0)
+                {
+                    continue;
+                }
+                if (chain_roots[idx + directions[i] + directions[j]] == chain_id)
+                {
+                    // check that it's not already counted as a chain liberty
+                    already_counted = true;
+                    break;
+                }
+            }
+            if (!already_counted)
+            {
+                chain_liberties[chain_id]++;
+                // if a liberty of the new stone doesn't border the chain already then add it for a new liberty
+            }
+        }
+    }
+}
+
+void Board::merge_chains(std::array<uint16_t, 4> neighbor_roots, uint16_t num_neighbors, uint16_t idx)
+{
+#if DEBUG
+    assert(num_neighbors > 1);
+    for (uint16_t i = 0; i < num_neighbors; i++)
+    {
+        if (i < num_neighbors)
+        {
+            assert(neighbor_roots[i] != 0);
+        }
+        else
+        {
+            assert(neighbor_roots[i] == 0);
+        }
+    }
+#endif
+
+    uint16_t new_root = neighbor_roots[0];
+    // pick root of first chain to be root of new merged one
+
+    uint16_t chain_size = chain_sizes[new_root] + 1;
+    // add 1 for new stone
+
+    for (uint16_t i = 1; i < num_neighbors; i++)
+    {
+        chain_size += chain_sizes[neighbor_roots[i]];
+        chain_sizes[neighbor_roots[i]] = 0;
+        // sum collective size and clear out afterwards
+    }
+
+    for (uint16_t i = 0; i < num_neighbors; i++)
+    {
+        chain_liberties[neighbor_roots[i]] = 0;
+        // update sizes and liberties
+    }
+    chain_sizes[new_root] = chain_size;
+
+    // update chain roots
+
+    for (uint16_t i = 0; i < NUM_POINTS; i++)
+    {
+        if (chain_roots[i] == 0)
+        {
+            // if empty
+            continue;
+        }
+        for (uint16_t j = 1; j < num_neighbors; j++)
+        {
+
+            if (chain_roots[i] == neighbor_roots[j])
+            {
+                chain_roots[i] = new_root;
+                break;
+            }
+        }
+    }
+
+    chain_roots[idx] = new_root;
+
+    uint16_t num_liberties = 0;
+    for (uint16_t i = 0; i < NUM_POINTS; i++)
+    {
+        if (board[i] == pointType::EMPTY)
+        {
+            if (i == idx)
+            {
+                continue;
+            }
+            for (uint16_t j = 0; j < 4; j++)
+            {
+                if (chain_roots[i + directions[j]] == new_root)
+                {
+                    num_liberties++;
+                    printf("\n%d\n", i);
+                    break;
+                }
+            }
+        }
+    }
+
+    chain_liberties[new_root] = num_liberties;
+}
+
+void Board::capture_chain(uint16_t chain_root)
+{
+#if DEBUG
+    assert(chain_liberties[chain_root] == 0);
+#endif
+    chain_sizes[chain_root] = 0;
+
+    for (uint16_t i = 0; i < NUM_POINTS; i++)
+    {
+        if (chain_roots[i] == chain_root)
+        {
+            chain_roots[i] = 0;
+            set_point(i, pointType::EMPTY);
+        }
+    }
+    chain_liberties[chain_root] = 0;
+    // we need this since set point adds liberties to adjacent chains on removal
+}
+
+uint16_t Board::get_liberties(uint16_t idx)
+{
+    uint16_t num_liberties = 0;
+    for (uint16_t i = 0; i < 4; i++)
     {
         if (board[idx + directions[i]] == pointType::EMPTY)
         {
@@ -118,11 +422,11 @@ int Board::get_liberties(int idx)
 
 void Board::print_board()
 {
-    for (int i = 0; i < (boardsize + 2); i++)
+    for (uint16_t i = 0; i < (BOARD_SIZE + 2); i++)
     {
-        for (int j = 0; j < (boardsize + 2); j++)
+        for (uint16_t j = 0; j < (BOARD_SIZE + 2); j++)
         {
-            switch (board[i * (boardsize + 2) + j])
+            switch (board[i * (BOARD_SIZE + 2) + j])
             {
             case pointType::BLANK:
                 std::cout << "# ";
@@ -141,9 +445,86 @@ void Board::print_board()
 
         std::cout << std::endl;
     }
+    std::cout << std::endl;
+    std::cout << "Chain Roots" << std::endl;
+    std::cout << std::endl;
+
+    for (uint16_t i = 0; i < (BOARD_SIZE + 2); i++)
+    {
+        for (uint16_t j = 0; j < (BOARD_SIZE + 2); j++)
+        {
+            switch (board[i * (BOARD_SIZE + 2) + j])
+            {
+            case pointType::BLANK:
+                std::cout << " # ";
+                break;
+            case pointType::EMPTY:
+                std::cout << "   ";
+                break;
+            case pointType::BLACK:
+            case pointType::WHITE:
+                printf("%3d", chain_roots[i * (BOARD_SIZE + 2) + j]);
+                break;
+            }
+        }
+
+        std::cout << std::endl;
+    }
+
+    std::cout << std::endl;
+    std::cout << "Chain Liberties" << std::endl;
+    std::cout << std::endl;
+
+    for (uint16_t i = 0; i < (BOARD_SIZE + 2); i++)
+    {
+        for (uint16_t j = 0; j < (BOARD_SIZE + 2); j++)
+        {
+            switch (board[i * (BOARD_SIZE + 2) + j])
+            {
+            case pointType::BLANK:
+                std::cout << " # ";
+                break;
+            case pointType::EMPTY:
+                std::cout << "   ";
+                break;
+            case pointType::BLACK:
+            case pointType::WHITE:
+                printf("%3d", chain_liberties[i * (BOARD_SIZE + 2) + j]);
+                break;
+            }
+        }
+
+        std::cout << std::endl;
+    }
+
+    std::cout << std::endl;
+    std::cout << "Chain Sizes" << std::endl;
+    std::cout << std::endl;
+
+    for (uint16_t i = 0; i < (BOARD_SIZE + 2); i++)
+    {
+        for (uint16_t j = 0; j < (BOARD_SIZE + 2); j++)
+        {
+            switch (board[i * (BOARD_SIZE + 2) + j])
+            {
+            case pointType::BLANK:
+                std::cout << " # ";
+                break;
+            case pointType::EMPTY:
+                std::cout << "   ";
+                break;
+            case pointType::BLACK:
+            case pointType::WHITE:
+                printf("%3d", chain_sizes[i * (BOARD_SIZE + 2) + j]);
+                break;
+            }
+        }
+
+        std::cout << std::endl;
+    }
 }
 
-nbrs Board::get_nbrs(int idx)
+nbrs Board::get_nbrs(uint16_t idx)
 {
     nbrs n;
     n.edges = 0;
@@ -189,24 +570,229 @@ nbrs Board::get_nbrs(int idx)
     return n;
 }
 
-int Board::coords_to_idx(int x, int y)
-{
-#if DEBUG
-    assert(x >= 0 && x < boardsize);
-    assert(y >= 0 && y < boardsize);
-#endif
-    return (boardsize + 2) * (y + 1) + x + 1;
-}
-
-std::pair<int, int> Board::idx_to_coords(int idx)
-{
-#if DEBUG
-    assert(idx >= 0 && (unsigned int)idx < board.size());
-#endif
-    return std::pair<int, int>(idx / (boardsize + 2) - 1, idx % (boardsize + 2) - 1);
-}
-
 uint64_t Board::get_hash()
 {
     return zobrist;
+}
+
+bool Board::make_play(uint16_t x, uint16_t y)
+{
+    bool color_to_move = whose_turn();
+    uint16_t idx = coords_to_idx(x, y);
+
+    if (check_play(idx))
+    {
+        print_board();
+        update_chains(idx);
+        set_point(idx, color_to_move ? pointType::BLACK : pointType::WHITE);
+        play_count++;
+        if (color_to_move)
+        {
+            black_ko_hash = get_hash();
+        }
+        else
+        {
+            white_ko_hash = get_hash();
+        }
+        return true;
+    }
+    return false;
+}
+
+bool Board::whose_turn()
+{
+    return (play_count & 1) == 0;
+}
+
+uint16_t Board::get_play_count()
+{
+    return play_count;
+}
+
+void Board::check_for_errors()
+{
+    std::array<uint16_t, NUM_POINTS> liberties_check{};
+    std::array<uint16_t, NUM_POINTS> sizes_check{};
+    for (uint16_t i = 0; i < NUM_POINTS; i++)
+    {
+        switch (board[i])
+        {
+        case pointType::BLACK:
+        case pointType::WHITE:
+            sizes_check[chain_roots[i]]++;
+
+            assert(chain_roots[i] != 0);
+            assert(chain_liberties[chain_roots[i]] != 0);
+            assert(chain_sizes[chain_roots[i]] != 0);
+            break;
+        case pointType::EMPTY:
+            std::array<uint16_t, 4> past_chains{};
+            uint16_t num_past_chains = 0;
+
+            for (uint16_t d = 0; d < 4; d++)
+            {
+                uint16_t chain_id = chain_roots[i + directions[d]];
+                if (chain_id != 0)
+                {
+
+                    bool dupl = false;
+                    for (uint16_t x = 0; x < num_past_chains; x++)
+                    {
+                        if (past_chains[x] == chain_id)
+                        {
+                            dupl = true;
+                            break;
+                        }
+                    }
+
+                    if (!dupl)
+                    {
+                        past_chains[num_past_chains] = chain_id;
+                        num_past_chains++;
+                        std::cout << i << " " << chain_roots[i + directions[d]] << '\n';
+                        liberties_check[chain_roots[i + directions[d]]]++;
+                    }
+                }
+            }
+            break;
+        }
+    }
+    for (uint16_t i = 0; i < NUM_POINTS; i++)
+    {
+        std::cout << i << " " << liberties_check[i] << " " << chain_liberties[i] << '\n';
+        std::cout << i << " " << sizes_check[i] << " " << chain_sizes[i] << '\n';
+        assert(liberties_check[i] == chain_liberties[i]);
+        assert(sizes_check[i] == chain_sizes[i]);
+    }
+}
+
+void Board::update_chains(uint16_t idx)
+{
+    struct nbrs n = get_nbrs(idx);
+
+    bool side = whose_turn();
+
+    pointType oppositeSide = side ? pointType::WHITE : pointType::BLACK;
+    pointType sameSide = side ? pointType::BLACK : pointType::WHITE;
+
+    // printf("\n\n%d\n\n", side);
+
+    uint16_t num_same_color = ((side ? n.black : n.white) & COUNT) >> 4;
+    // uint16_t num_diff_color = ((side ? n.white : n.black) & COUNT) >> 4;
+
+    // printf("\n\nBLACK: %x\tWHITE: %x\tEDGE: %x\tLIB: %x\n\n", n.black, n.white, n.edges, n.liberties);
+
+    // printf("%d", (side ? n.black : n.white) & COUNT);
+
+    // printf("%x %x", n.black, n.white);
+
+    // if (num_diff_color != 0)
+    // {
+    std::array<int, 4> prev_chains{};
+    uint16_t prev_chain_count = 0;
+    for (uint16_t i = 0; i < 4; i++)
+    {
+        uint16_t neighbor = idx + directions[i];
+        if (board[neighbor] == oppositeSide)
+        {
+            uint16_t chain_id = chain_roots[neighbor];
+#if DEBUG
+            assert(chain_roots[neighbor] != 0);
+            assert(chain_liberties[chain_roots[neighbor]] != 0);
+            assert(chain_sizes[chain_roots[neighbor]] != 0);
+#endif
+            bool dupl = false;
+            for (uint16_t x = 0; x < prev_chain_count; x++)
+
+            {
+                if (prev_chains[x] == chain_id)
+                {
+                    dupl = true;
+                    break;
+                }
+            }
+
+            if (!dupl)
+            {
+                prev_chains[prev_chain_count] = chain_id;
+                prev_chain_count++;
+
+                chain_liberties[chain_id]--;
+                if (chain_liberties[chain_id] == 0)
+                {
+                    capture_chain(chain_id);
+                }
+            }
+        }
+    }
+
+    if (num_same_color == 0)
+    {
+        // new chain
+        // printf("new chain");
+        create_chain(idx);
+    }
+
+    else if (num_same_color == 1)
+    {
+        // extension
+        for (uint16_t i = 0; i < 4; i++)
+        {
+            uint16_t neighbor = idx + directions[i];
+            if (board[neighbor] == sameSide)
+            {
+                // printf("extension");
+                extend_chain(idx, neighbor);
+                break;
+            }
+        }
+    }
+
+    else
+    {
+        // merger or extension
+
+        // printf("merger or extension");
+
+        std::array<uint16_t, 4> same_color_chains{};
+        uint16_t same_color_count = 0;
+        for (uint16_t i = 0; i < 4; i++)
+        {
+            uint16_t neighbor = idx + directions[i];
+            if (board[neighbor] == sameSide)
+            {
+                uint16_t chain_id = chain_roots[neighbor];
+
+                bool dupl = false;
+                for (uint16_t x = 0; x < same_color_count; x++)
+                {
+                    if (same_color_chains[x] == chain_id)
+                    {
+                        dupl = true;
+                        break;
+                    }
+                }
+
+                if (!dupl)
+                {
+                    same_color_chains[same_color_count] = chain_id;
+                    same_color_count++;
+                }
+            }
+        }
+
+#if DEBUG
+        assert(same_color_count > 0);
+#endif
+
+        if (same_color_count == 1)
+        {
+            // printf("extension");
+            extend_chain(idx, same_color_chains[0]);
+        }
+        else
+        {
+            merge_chains(same_color_chains, same_color_count, idx);
+        }
+    }
 }

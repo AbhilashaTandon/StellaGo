@@ -1,26 +1,24 @@
 #include "Board.h"
-#include "Game.h"
 #include <cstdio>
 #include <random>
 #include <ctime>
+#include <iostream>
 
-#define BOARDSIZE 19
-
-void stress_test()
-{
-    for (int i = 0; i < 20; i++)
-    {
-        Game g = Game(BOARDSIZE);
-        for (int i = 0; i < 1000; i++)
-        {
-            g.make_play(rand() % BOARDSIZE, rand() % BOARDSIZE);
-        }
-    }
-}
+// void stress_test()
+// {
+//     for (int i = 0; i < 20; i++)
+//     {
+//         Game g = Game(BOARDSIZE);
+//         for (int i = 0; i < 1000; i++)
+//         {
+//             g.make_play(rand() % BOARDSIZE, rand() % BOARDSIZE);
+//         }
+//     }
+// }
 
 int main()
 {
-    srand(time(NULL));
+    srand(0);
 
     // std::vector<std::pair<int, int>> moves = {std::pair<int, int>(0, 1), std::pair<int, int>(3, 1), std::pair<int, int>(1, 2), std::pair<int, int>(2, 2), std::pair<int, int>(1, 0), std::pair<int, int>(2, 0), std::pair<int, int>(2, 1), std::pair<int, int>(1, 1), std::pair<int, int>(2, 1), std::pair<int, int>(1, 1), std::pair<int, int>(2, 1), std::pair<int, int>(1, 1)};
 
@@ -31,21 +29,22 @@ int main()
     //         g.print_board();
     //     }
     // }
-#if DEBUG
-    Game g = Game(BOARDSIZE);
+    std::cout << "Hello anyone there?" << std::endl;
+    // #if DEBUG
+    Board g = Board();
     for (int i = 0; i < 10000; i++)
     {
-        if (g.make_play(rand() % BOARDSIZE, rand() % BOARDSIZE))
+        if (g.make_play(rand() % BOARD_SIZE, rand() % BOARD_SIZE))
         {
             g.print_board();
 
             g.check_for_errors();
         }
     }
-#endif
-#if PROFILE
-    stress_test();
-#endif
+    // #endif
+    // #if PROFILE
+    //     stress_test();
+    // #endif
 
     return 0;
 }

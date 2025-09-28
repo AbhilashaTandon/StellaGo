@@ -64,7 +64,8 @@ run: $(BUILD_DIR)/$(TARGET_EXEC)
 	./$(BUILD_DIR)/$(TARGET_EXEC)
 
 debug: clean $(BUILD_DIR)/$(TARGET_EXEC)
-	gdb $(BUILD_DIR)/$(TARGET_EXEC)
+	./$(BUILD_DIR)/$(TARGET_EXEC)
+# 	gdb $(BUILD_DIR)/$(TARGET_EXEC)
 
 profile: clean $(BUILD_DIR)/$(TARGET_EXEC)
 	./$(BUILD_DIR)/$(TARGET_EXEC)
