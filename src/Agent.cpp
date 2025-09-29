@@ -17,32 +17,28 @@ std::pair<uint16_t, int16_t> Agent::alphabeta(Board b, uint8_t depth, int16_t al
 {
     if (depth < 1)
     {
-        return std::pair<uint16_t, int16_t>(0, b.stone_score());
+        return std::pair<uint16_t, int16_t>(0, b.score());
     }
     int16_t value = 0;
     uint16_t best_move = PASS;
     value = b.whose_turn() ? MIN_SCORE : MAX_SCORE;
-    // black to move
-    for (int x = 0; x < BOARD_SIZE; x++)
+    for (int idx = 0; idx < 361; idx++)
     {
-        for (int y = 0; y < BOARD_SIZE; y++)
+        int i = optimal_move_checking_order[idx];
+        if (b.get_point(i) == pointType::EMPTY)
         {
-            int i = (BOARD_SIZE + 2) * (x + 1) + (y + 1);
-            if (b.get_point(i) == pointType::EMPTY)
+            if (b.whose_turn())
             {
-                if (b.whose_turn())
+                if (evaluate_move_black(b, i, depth, alpha, beta, value, best_move))
                 {
-                    if (evaluate_move_black(b, i, depth, alpha, beta, value, best_move))
-                    {
-                        break;
-                    }
+                    break;
                 }
-                else
+            }
+            else
+            {
+                if (evaluate_move_white(b, i, depth, alpha, beta, value, best_move))
                 {
-                    if (evaluate_move_white(b, i, depth, alpha, beta, value, best_move))
-                    {
-                        break;
-                    }
+                    break;
                 }
             }
         }
@@ -62,16 +58,6 @@ bool Agent::evaluate_move_white(Board b, int i, uint8_t depth, int16_t alpha, in
         {
             best_move = i;
             value = score;
-            // Board copy_2 = Board(b);
-            // assert(copy_2.make_play(best_move));
-        }
-        else if (score == value)
-        {
-            if (rand() % 10 == 0)
-            {
-                best_move = i;
-                value = score;
-            }
         }
         if (value <= alpha)
         {
@@ -95,14 +81,6 @@ bool Agent::evaluate_move_black(Board b, int i, uint8_t depth, int16_t &alpha, i
         {
             best_move = i;
             value = score;
-        }
-        else if (score == value)
-        {
-            if (rand() % 10 == 0)
-            {
-                best_move = i;
-                value = score;
-            }
         }
         if (value >= beta)
         {
@@ -139,7 +117,7 @@ void Agent::play(uint8_t depth, uint16_t move_limit)
             }
             if (black_pass && white_pass)
             {
-                int16_t score = b.stone_score();
+                int16_t score = b.score();
                 std::cout << "GAME OVER: " << ((score > 0) ? "BLACK" : "WHITE") << " wins!" << '\n';
                 printf("Move: %u\tScore: %d\n", i, score);
                 b.print_board();
@@ -147,7 +125,7 @@ void Agent::play(uint8_t depth, uint16_t move_limit)
             }
         }
         assert(b.make_play(best_move.first));
-        printf("Move: %u\tScore: %d\n", i, b.stone_score());
+        printf("Move: %u\tScore: %d\n", i, b.score());
         b.print_board();
     }
 }
