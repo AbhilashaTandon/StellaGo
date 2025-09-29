@@ -30,86 +30,89 @@ std::pair<uint16_t, int16_t> Agent::alphabeta(Board b, uint8_t depth, int16_t al
             int i = (BOARD_SIZE + 2) * (x + 1) + (y + 1);
             if (b.get_point(i) == pointType::EMPTY)
             {
-                bool found_adj = false;
-                // only play directly adjacent to stones or sides
-                for (int d = 0; d < 4; d++)
+                if (b.whose_turn())
                 {
-                    if (b.get_point(i + b.directions[d]) != EMPTY)
+                    if (evaluate_move_black(b, i, depth, alpha, beta, value, best_move))
                     {
-                        found_adj = true;
                         break;
                     }
                 }
-                if (!found_adj)
+                else
                 {
-                    if (rand() % 2 != 0)
+                    if (evaluate_move_white(b, i, depth, alpha, beta, value, best_move))
                     {
-                        continue;
-                    }
-                }
-                Board copy = Board(b);
-                if (copy.make_play(i))
-                {
-                    int retFlag;
-                    if (b.whose_turn())
-                    {
-                        evaluate_move_black(copy, depth, alpha, beta, i, value, best_move, retFlag);
-                    }
-                    else
-                    {
-                        evaluate_move_white(copy, depth, alpha, beta, i, value, best_move, retFlag);
-                    }
-                    if (retFlag == 2)
                         break;
+                    }
                 }
             }
         }
     }
+
     return std::pair<uint16_t, int16_t>(best_move, value);
 }
 
-void Agent::evaluate_move_white(Board &copy, uint8_t depth, int16_t alpha, int16_t &beta, int i, int16_t &value, uint16_t &best_move, int &retFlag)
+bool Agent::evaluate_move_white(Board b, int i, uint8_t depth, int16_t alpha, int16_t &beta, int16_t &value, uint16_t &best_move)
 {
-    retFlag = 1;
-    std::pair<uint16_t, int16_t> look_ahead = alphabeta(copy, depth - 1, alpha, beta);
-    int score = -point_weights[i] +
-                look_ahead.second;
-    if (score < value)
+    if (b.make_play(i))
     {
-        best_move = i;
-        value = score;
-        // Board copy_2 = Board(b);
-        // assert(copy_2.make_play(best_move));
-    }
-    if (value <= alpha)
-    {
+        std::pair<uint16_t, int16_t> look_ahead = alphabeta(b, depth - 1, alpha, beta);
+        int score =
+            look_ahead.second;
+        if (score < value)
         {
-            retFlag = 2;
-            return;
-        };
+            best_move = i;
+            value = score;
+            // Board copy_2 = Board(b);
+            // assert(copy_2.make_play(best_move));
+        }
+        else if (score == value)
+        {
+            if (rand() % 10 == 0)
+            {
+                best_move = i;
+                value = score;
+            }
+        }
+        if (value <= alpha)
+        {
+            {
+                return true;
+            };
+        }
+        beta = beta < value ? beta : value;
     }
-    beta = beta < value ? beta : value;
+    return false;
 }
 
-void Agent::evaluate_move_black(Board &copy, uint8_t depth, int16_t &alpha, int16_t beta, int i, int16_t &value, uint16_t &best_move, int &retFlag)
+bool Agent::evaluate_move_black(Board b, int i, uint8_t depth, int16_t &alpha, int16_t beta, int16_t &value, uint16_t &best_move)
 {
-    retFlag = 1;
-    std::pair<uint16_t, int16_t> look_ahead = alphabeta(copy, depth - 1, alpha, beta);
-    int score = point_weights[i] +
-                look_ahead.second;
-    if (score > value)
+    if (b.make_play(i))
     {
-        best_move = i;
-        value = score;
-    }
-    if (value >= beta)
-    {
+        std::pair<uint16_t, int16_t> look_ahead = alphabeta(b, depth - 1, alpha, beta);
+        int score =
+            look_ahead.second;
+        if (score > value)
         {
-            retFlag = 2;
-            return;
-        };
+            best_move = i;
+            value = score;
+        }
+        else if (score == value)
+        {
+            if (rand() % 10 == 0)
+            {
+                best_move = i;
+                value = score;
+            }
+        }
+        if (value >= beta)
+        {
+            {
+                return true;
+            };
+        }
+        alpha = alpha > value ? alpha : value;
     }
-    alpha = alpha > value ? alpha : value;
+    return false;
 }
 
 Agent::Agent() : b()

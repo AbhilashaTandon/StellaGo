@@ -3,9 +3,9 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 #define DEBUG false
-#define PROFILE true
+#define PROFILE false
 
-static constexpr auto BOARD_SIZE = 19;
+static constexpr auto BOARD_SIZE = 9;
 
 static constexpr auto komi = 7.5f;
 

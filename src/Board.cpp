@@ -47,24 +47,6 @@ Board::Board()
     white_ko_hash = 0;
 }
 
-Board::Board(const Board &b)
-{
-    this->board = b.board;
-    this->directions = b.directions;
-    this->zobrist = b.zobrist;
-    this->zobrist_hashes_black = b.zobrist_hashes_black;
-    this->zobrist_hashes_white = b.zobrist_hashes_white;
-    this->black_count = b.black_count;
-    this->white_count = b.white_count;
-    this->empty_count = b.empty_count;
-    this->play_count = b.play_count;
-    this->black_ko_hash = b.black_ko_hash;
-    this->white_ko_hash = b.white_ko_hash;
-    this->chain_liberties = b.chain_liberties;
-    this->chain_roots = b.chain_roots;
-    this->chain_sizes = b.chain_sizes;
-}
-
 uint16_t Board::get_liberties(uint16_t idx) const
 {
     uint16_t num_liberties = 0;

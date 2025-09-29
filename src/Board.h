@@ -34,7 +34,6 @@ class Board
 
 public:
     Board();
-    Board(const Board &b);
 
     bool make_play(uint16_t idx);
     bool whose_turn() const;

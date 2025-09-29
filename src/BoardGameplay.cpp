@@ -6,8 +6,6 @@
 
 bool Board::check_play(uint16_t idx) const
 {
-    bool color_to_move = whose_turn();
-
     if (board[idx] != pointType::EMPTY)
     {
         return false;
@@ -17,6 +15,8 @@ bool Board::check_play(uint16_t idx) const
     {
         return false;
     }
+
+    bool color_to_move = whose_turn();
 
     // ko checking
 
