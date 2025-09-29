@@ -21,12 +21,13 @@ std::pair<uint16_t, int16_t> Agent::alphabeta(Board b, uint8_t depth, int16_t al
     }
     int16_t value = 0;
     uint16_t best_move = PASS;
-    if (b.whose_turn())
+    value = b.whose_turn() ? MIN_SCORE : MAX_SCORE;
+    // black to move
+    for (int x = 0; x < BOARD_SIZE; x++)
     {
-        value = MIN_SCORE;
-        // black to move
-        for (int i = 0; i < NUM_POINTS; i++)
+        for (int y = 0; y < BOARD_SIZE; y++)
         {
+            int i = (BOARD_SIZE + 2) * (x + 1) + (y + 1);
             if (b.get_point(i) == pointType::EMPTY)
             {
                 bool found_adj = false;
@@ -41,90 +42,74 @@ std::pair<uint16_t, int16_t> Agent::alphabeta(Board b, uint8_t depth, int16_t al
                 }
                 if (!found_adj)
                 {
-                    continue;
+                    if (rand() % 2 != 0)
+                    {
+                        continue;
+                    }
                 }
                 Board copy = Board(b);
                 if (copy.make_play(i))
                 {
-                    std::pair<uint16_t, int16_t> look_ahead = alphabeta(copy, depth - 1, alpha, beta);
-                    if (look_ahead.second > value)
+                    int retFlag;
+                    if (b.whose_turn())
                     {
-                        best_move = i;
-                        value = look_ahead.second;
+                        evaluate_move_black(copy, depth, alpha, beta, i, value, best_move, retFlag);
                     }
-                    else if (look_ahead.second == value)
+                    else
                     {
-                        if (rand() % 10 == 0)
-                        {
-                            best_move = i;
-                            value = look_ahead.second;
-                        }
+                        evaluate_move_white(copy, depth, alpha, beta, i, value, best_move, retFlag);
                     }
-                    if (value >= beta)
-                    {
+                    if (retFlag == 2)
                         break;
-                    }
-                    alpha = alpha > value ? alpha : value;
-                    if (best_move != PASS)
-                    {
-                        Board copy_2 = Board(b);
-                        assert(copy_2.make_play(best_move));
-                    }
-                }
-            }
-        }
-    }
-    else
-    {
-        value = MAX_SCORE;
-        // black to move
-        for (int i = 0; i < NUM_POINTS; i++)
-        {
-            if (b.get_point(i) == pointType::EMPTY)
-            {
-                bool found_adj = false;
-                // only play directly adjacent to stones or sides
-                for (int d = 0; d < 4; d++)
-                {
-                    if (b.get_point(i + b.directions[d]) != EMPTY)
-                    {
-                        found_adj = true;
-                        break;
-                    }
-                }
-                if (!found_adj)
-                {
-                    continue;
-                }
-                Board copy = Board(b);
-                if (copy.make_play(i))
-                {
-                    std::pair<uint16_t, int16_t> look_ahead = alphabeta(copy, depth - 1, alpha, beta);
-                    if (look_ahead.second < value)
-                    {
-                        best_move = i;
-                        value = look_ahead.second;
-                        // Board copy_2 = Board(b);
-                        // assert(copy_2.make_play(best_move));
-                    }
-                    else if (look_ahead.second == value)
-                    {
-                        if (rand() % 10 == 0)
-                        {
-                            best_move = i;
-                            value = look_ahead.second;
-                        }
-                    }
-                    if (value <= alpha)
-                    {
-                        break;
-                    }
-                    beta = beta < value ? beta : value;
                 }
             }
         }
     }
     return std::pair<uint16_t, int16_t>(best_move, value);
+}
+
+void Agent::evaluate_move_white(Board &copy, uint8_t depth, int16_t alpha, int16_t &beta, int i, int16_t &value, uint16_t &best_move, int &retFlag)
+{
+    retFlag = 1;
+    std::pair<uint16_t, int16_t> look_ahead = alphabeta(copy, depth - 1, alpha, beta);
+    int score = -point_weights[i] +
+                look_ahead.second;
+    if (score < value)
+    {
+        best_move = i;
+        value = score;
+        // Board copy_2 = Board(b);
+        // assert(copy_2.make_play(best_move));
+    }
+    if (value <= alpha)
+    {
+        {
+            retFlag = 2;
+            return;
+        };
+    }
+    beta = beta < value ? beta : value;
+}
+
+void Agent::evaluate_move_black(Board &copy, uint8_t depth, int16_t &alpha, int16_t beta, int i, int16_t &value, uint16_t &best_move, int &retFlag)
+{
+    retFlag = 1;
+    std::pair<uint16_t, int16_t> look_ahead = alphabeta(copy, depth - 1, alpha, beta);
+    int score = point_weights[i] +
+                look_ahead.second;
+    if (score > value)
+    {
+        best_move = i;
+        value = score;
+    }
+    if (value >= beta)
+    {
+        {
+            retFlag = 2;
+            return;
+        };
+    }
+    alpha = alpha > value ? alpha : value;
 }
 
 Agent::Agent() : b()
