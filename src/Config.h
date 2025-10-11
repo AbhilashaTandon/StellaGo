@@ -2,8 +2,9 @@
 #include <array>
 #ifndef CONFIG_H
 #define CONFIG_H
-#define DEBUG false
+#define DEBUG true
 #define PROFILE false
+#define VERBOSE false
 
 static constexpr auto BOARD_SIZE = 9;
 

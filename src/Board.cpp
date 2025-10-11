@@ -87,6 +87,7 @@ void Board::print_board() const
     }
     std::cout << std::endl;
 #if DEBUG
+#if VERBOSE
     std::cout << "Chain Roots" << std::endl;
     std::cout << std::endl;
 
@@ -162,6 +163,7 @@ void Board::print_board() const
         }
         std::cout << std::endl;
     }
+#endif
 #endif
 }
 
