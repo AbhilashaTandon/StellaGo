@@ -28,14 +28,15 @@ INC_FLAGS := $(addprefix -I,$(INC_DIRS))
 # The -MMD and -MP flags together generate Makefiles for us!
 # These files will have .d instead of .o as the output.
 CPPFLAGS := $(INC_FLAGS) -MMD -MP
-COMMON_FLAGS = -std=c++20 -Wall -Wextra -Wpedantic  -Wno-conversion -Wdouble-promotion  -Wno-unused-parameter -Wno-unused-function -Wno-sign-conversion -ftrapv -lasan
+COMMON_FLAGS = -std=c++20 -Wall -Wextra -Wpedantic  -Wno-conversion -Wdouble-promotion  -Wno-unused-parameter -Wno-unused-function -Wno-sign-conversion 
 # CXXFLAGS := -O2 $(COMMON_FLAGS) 
-run: CXXFLAGS := -O2 $(COMMON_FLAGS) -fsanitize=address -fsanitize=undefined -fsanitize-trap
-LDFLAGS := -lasan -fsanitize=address
+run: CXXFLAGS := -O2 $(COMMON_FLAGS) -fsanitize=address -fsanitize=undefined -ftrapv -lasan -fsanitize-trap
+run: LDFLAGS := -lasan -fsanitize=address
+lint: CXXFLAGS := -O0 $(COMMON_FLAGS) 
+lint: LDFLAGS := -lasan -fsanitize=address 
 debug: CXXFLAGS = -g3 -O0 $(COMMON_FLAGS)
 profile: CXXFLAGS = -O0 -g $(COMMON_FLAGS) -fno-inline
 profile: LDFLAGS = -g
-     
 
 # The final build step.
 $(BUILD_DIR)/$(TARGET_EXEC): $(OBJS)
@@ -63,9 +64,13 @@ clean:
 run: $(BUILD_DIR)/$(TARGET_EXEC)
 	./$(BUILD_DIR)/$(TARGET_EXEC)
 
-debug: clean $(BUILD_DIR)/$(TARGET_EXEC)
+lint: clean $(BUILD_DIR)/$(TARGET_EXEC)
 	./$(BUILD_DIR)/$(TARGET_EXEC)
-# 	gdb $(BUILD_DIR)/$(TARGET_EXEC)
+
+
+debug: clean $(BUILD_DIR)/$(TARGET_EXEC)
+# 	./$(BUILD_DIR)/$(TARGET_EXEC)
+	gdb $(BUILD_DIR)/$(TARGET_EXEC)
 
 profile: clean $(BUILD_DIR)/$(TARGET_EXEC)
 	./$(BUILD_DIR)/$(TARGET_EXEC)
