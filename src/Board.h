@@ -44,7 +44,7 @@ public:
     pointType get_point(uint16_t idx) const;
     std::array<int, 4> directions;
     std::array<int, 4> diagonals;
-    int16_t stone_score() const;
+    int16_t score() const;
 
 protected:
     std::array<pointType, NUM_POINTS> board{};

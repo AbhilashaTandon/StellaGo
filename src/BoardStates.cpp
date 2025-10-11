@@ -28,9 +28,27 @@ void Board::check_position(uint16_t idx) const
     assert(chain_sizes[chain_roots[idx]] != 0);
 }
 
-int16_t Board::stone_score() const
+int16_t Board::score() const
 {
-    return int16_t(black_count) - int16_t(white_count) - komi;
+    int black_liberties = 0;
+    int white_liberties = 0;
+    for (int i = 0; i < NUM_POINTS; i++)
+    {
+        if (chain_liberties[i] == 0)
+        {
+            continue;
+        }
+        if (board[i] == pointType::BLACK)
+        {
+            black_liberties += chain_liberties[i];
+        }
+        else
+        {
+            assert(board[i] == pointType::WHITE);
+            white_liberties += chain_liberties[i];
+        }
+    }
+    return int16_t(black_count) - int16_t(white_count) - komi + black_liberties - white_liberties;
 }
 
 pointType Board::get_point(uint16_t idx) const
