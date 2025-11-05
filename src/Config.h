@@ -2,11 +2,11 @@
 #include <array>
 #ifndef CONFIG_H
 #define CONFIG_H
-#define DEBUG true
+#define DEBUG false
 #define PROFILE false
 #define VERBOSE false
 
-static constexpr auto BOARD_SIZE = 9;
+static constexpr auto BOARD_SIZE = 13;
 
 static constexpr auto komi = 7.5f;
 

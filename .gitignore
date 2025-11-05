@@ -11,3 +11,5 @@ callgrind.txt
 callgrind_profile.txt
 game.txt
 games
+notes.txt
+valgrind.txt

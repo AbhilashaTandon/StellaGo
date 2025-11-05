@@ -53,5 +53,5 @@ int main()
     //     //     std::cout << "Hello anyone there?" << std::endl;
     //     //     return 0;
     Agent a = Agent();
-    a.play(3, 1000);
+    a.play(4, 100);
 }
