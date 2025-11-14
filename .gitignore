@@ -13,3 +13,4 @@ game.txt
 games
 notes.txt
 valgrind.txt
+callgrind_merge_chains.txt
