@@ -72,6 +72,11 @@ void Board::print_board() const
                 std::cout << "# ";
                 break;
             case pointType::EMPTY:
+                if (is_eye(i * (BOARD_SIZE + 2) + j))
+                {
+                    std::cout << "* ";
+                    break;
+                }
                 std::cout << "  ";
                 break;
             case pointType::BLACK:
@@ -181,6 +186,10 @@ bool Board::make_play(uint16_t idx)
     }
     bool color_to_move = whose_turn();
 
+#if DEBUG
+    assert(chain_roots[idx] == 0);
+#endif
+
     if (check_play(idx))
     {
         // print_board();
@@ -196,8 +205,11 @@ bool Board::make_play(uint16_t idx)
             white_ko_hash = get_hash();
         }
 #if DEBUG
-        print_board();
+
         check_for_errors();
+#endif
+#if VERBOSE
+        print_board();
 #endif
         return true;
     }

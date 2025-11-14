@@ -21,6 +21,48 @@ std::pair<int, int> Board::idx_to_coords(uint16_t idx) const
     return std::pair<int, int>(idx / (BOARD_SIZE + 2) - 1, idx % (BOARD_SIZE + 2) - 1);
 }
 
+uint8_t Board::is_eye(uint16_t idx) const
+{
+    if (board[idx] != EMPTY)
+    {
+        return false;
+    }
+    nbrs n = get_nbrs(idx);
+    uint8_t color = 0;
+    if ((((n.black & COUNT) >> 4) + ((n.edges & COUNT) >> 4)) == 4)
+    {
+        color = BLACK;
+    }
+    else if ((((n.white & COUNT) >> 4) + ((n.edges & COUNT) >> 4)) == 4)
+    {
+        color = WHITE;
+    }
+    else
+    {
+        // std::printf("lacks direct neighbors %d %d %d\n", n.edges & COUNT, n.black, n.white);
+        return 0;
+    }
+
+    // check for at least 2 diagonals
+
+    int num_diagonals = 0;
+    for (int i = 0; i < 4; i++)
+    {
+        if (board[idx + diagonals[i]] == color || board[idx + diagonals[i]] == BLANK)
+        {
+            num_diagonals++;
+        }
+        if (num_diagonals >= 2)
+        {
+            // this includes false eyes
+            return color;
+        }
+    }
+
+    // std::cout << "lacks diagonal neighbors";
+    return 0;
+}
+
 void Board::check_position(uint16_t idx) const
 {
     assert(chain_roots[idx] != 0);
@@ -32,23 +74,70 @@ int16_t Board::score() const
 {
     int black_liberties = 0;
     int white_liberties = 0;
+
+    int black_eyes = 0;
+    int white_eyes = 0;
+
     for (int i = 0; i < NUM_POINTS; i++)
     {
-        if (chain_liberties[i] == 0)
+        int libs = chain_liberties[i];
+        switch (is_eye(i))
+        {
+        case BLACK:
+            black_eyes++;
+            break;
+        case WHITE:
+            white_eyes++;
+            break;
+        }
+
+        if (libs == 0)
         {
             continue;
         }
         if (board[i] == pointType::BLACK)
         {
             black_liberties += chain_liberties[i];
+            if (libs < 3)
+            {
+                black_liberties -= chain_sizes[i];
+            }
         }
         else
         {
             assert(board[i] == pointType::WHITE);
             white_liberties += chain_liberties[i];
+            if (libs < 3)
+            {
+                white_liberties -= chain_sizes[i];
+            }
         }
     }
-    return int16_t(black_count) - int16_t(white_count) - komi + black_liberties - white_liberties;
+
+    int black_chain_score = 0;
+    int white_chain_score = 0;
+
+    for (int i = 0; i < NUM_POINTS; i++)
+    {
+        uint64_t chain_score = chain_sizes[i] * chain_sizes[i];
+        if (chain_score != 0)
+        {
+            if (board[i] == BLACK)
+            {
+                black_chain_score += chain_score;
+            }
+            else if (board[i] == WHITE)
+            {
+                white_chain_score += chain_score;
+            }
+            else
+            {
+                assert(false);
+            }
+        }
+    }
+
+    return -komi + black_liberties - white_liberties + (black_chain_score >> 3) - (white_chain_score >> 3) + black_eyes * 3 - white_eyes * 3;
 }
 
 pointType Board::get_point(uint16_t idx) const

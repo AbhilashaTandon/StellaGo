@@ -1,0 +1,1080 @@
+--------------------------------------------------------------------------------
+Profile data file 'callgrind.txt' (creator: callgrind-3.24.0)
+--------------------------------------------------------------------------------
+I1 cache: 
+D1 cache: 
+LL cache: 
+Timerange: Basic block 0 - 31062558650
+Trigger: Program termination
+Profiled target:  ././build/stella (PID 425535, part 1)
+Events recorded:  Ir
+Events shown:     Ir
+Event sort order: Ir
+Thresholds:       99
+Include dirs:     
+User annotated:   
+Auto-annotation:  on
+
+--------------------------------------------------------------------------------
+Ir                       
+--------------------------------------------------------------------------------
+133,541,167,690 (100.0%)  PROGRAM TOTALS
+
+--------------------------------------------------------------------------------
+Ir                       file:function
+--------------------------------------------------------------------------------
+32,991,028,534 (24.70%)  src/BoardChainManagement.cpp:Board::merge_chains(std::array<unsigned short, 4ul>, unsigned short, unsigned short) [/home/abhilasha/Dev/Programming/C++/StellaGo/build/stella]
+23,476,599,786 (17.58%)  src/BoardStates.cpp:Board::score() const [/home/abhilasha/Dev/Programming/C++/StellaGo/build/stella]
+14,699,157,693 (11.01%)  /usr/include/c++/13/array:std::array<unsigned short, 225ul>::operator[](unsigned long) const [/home/abhilasha/Dev/Programming/C++/StellaGo/build/stella]
+14,339,637,510 (10.74%)  /usr/include/c++/13/array:std::array<unsigned short, 225ul>::operator[](unsigned long) [/home/abhilasha/Dev/Programming/C++/StellaGo/build/stella]
+ 8,982,147,922 ( 6.73%)  /usr/include/c++/13/array:std::array<int, 4ul>::operator[](unsigned long) [/home/abhilasha/Dev/Programming/C++/StellaGo/build/stella]
+ 5,496,451,673 ( 4.12%)  src/Agent.cpp:Agent::alphabeta(Board, unsigned char, short, short)'2 [/home/abhilasha/Dev/Programming/C++/StellaGo/build/stella]
+ 4,866,265,020 ( 3.64%)  src/BoardGameplay.cpp:Board::check_play(unsigned short) const [/home/abhilasha/Dev/Programming/C++/StellaGo/build/stella]
+ 4,781,025,315 ( 3.58%)  /usr/include/c++/13/array:std::array<pointType, 225ul>::operator[](unsigned long) [/home/abhilasha/Dev/Programming/C++/StellaGo/build/stella]
+ 4,307,048,394 ( 3.23%)  /usr/include/c++/13/array:std::array<pointType, 225ul>::operator[](unsigned long) const [/home/abhilasha/Dev/Programming/C++/StellaGo/build/stella]
+ 2,565,474,390 ( 1.92%)  src/BoardChainManagement.cpp:Board::update_chains(unsigned short) [/home/abhilasha/Dev/Programming/C++/StellaGo/build/stella]
+ 2,443,527,051 ( 1.83%)  src/Agent.cpp:Agent::evaluate_move_white(Board, int, unsigned char, short, short&, short&, unsigned short&)'2 [/home/abhilasha/Dev/Programming/C++/StellaGo/build/stella]
+ 2,305,088,887 ( 1.73%)  src/BoardStates.cpp:Board::get_nbrs(unsigned short) const [/home/abhilasha/Dev/Programming/C++/StellaGo/build/stella]
+ 2,217,349,916 ( 1.66%)  src/Agent.cpp:Agent::evaluate_move_black(Board, int, unsigned char, short&, short, short&, unsigned short&)'2 [/home/abhilasha/Dev/Programming/C++/StellaGo/build/stella]
+ 1,708,138,432 ( 1.28%)  /usr/include/c++/13/array:std::array<unsigned short, 4ul>::operator[](unsigned long) [/home/abhilasha/Dev/Programming/C++/StellaGo/build/stella]
+ 1,548,197,024 ( 1.16%)  src/BoardStates.cpp:Board::set_point(unsigned short, pointType) [/home/abhilasha/Dev/Programming/C++/StellaGo/build/stella]
+ 1,229,881,288 ( 0.92%)  src/BoardChainManagement.cpp:Board::extend_chain(unsigned short, unsigned short) [/home/abhilasha/Dev/Programming/C++/StellaGo/build/stella]
+   902,834,856 ( 0.68%)  /usr/include/c++/13/array:std::array<int, 4ul>::operator[](unsigned long) const [/home/abhilasha/Dev/Programming/C++/StellaGo/build/stella]
+   815,134,251 ( 0.61%)  src/BoardChainManagement.cpp:Board::capture_chain(unsigned short) [/home/abhilasha/Dev/Programming/C++/StellaGo/build/stella]
+   809,057,229 ( 0.61%)  src/Board.cpp:Board::get_liberties(unsigned short) const [/home/abhilasha/Dev/Programming/C++/StellaGo/build/stella]
+   474,644,478 ( 0.36%)  /usr/include/c++/13/array:std::array<unsigned long, 225ul>::operator[](unsigned long) [/home/abhilasha/Dev/Programming/C++/StellaGo/build/stella]
+   459,118,426 ( 0.34%)  src/BoardGameplay.cpp:Board::is_suicide(unsigned short) const [/home/abhilasha/Dev/Programming/C++/StellaGo/build/stella]
+   419,902,320 ( 0.31%)  src/BoardStates.cpp:Board::get_point(unsigned short) const [/home/abhilasha/Dev/Programming/C++/StellaGo/build/stella]
+   387,807,708 ( 0.29%)  src/Board.cpp:Board::whose_turn() const [/home/abhilasha/Dev/Programming/C++/StellaGo/build/stella]
+
+--------------------------------------------------------------------------------
+-- Auto-annotated source: src/Board.cpp
+--------------------------------------------------------------------------------
+Ir                   
+
+          .           #include <iostream>
+          .           #include <random>
+          .           #include <cmath>
+          .           
+          .           #include "Board.h"
+          .           
+        930 ( 0.00%)  Board::Board()
+          .           {
+      1,129 ( 0.00%)      for (uint16_t i = 0; i < NUM_POINTS; i++)
+          .               {
+      1,575 ( 0.00%)          this->board[i] = pointType::EMPTY;
+      2,475 ( 0.00%)  => /usr/include/c++/13/array:std::array<pointType, 225ul>::operator[](unsigned long) (225x)
+          .               }
+          .           
+         74 ( 0.00%)      for (uint16_t i = 0; i < BOARD_SIZE + 1; i++)
+          .               {
+          .                   // add in edges of board
+        126 ( 0.00%)          board[i + 1] = pointType::BLANK;
+        154 ( 0.00%)  => /usr/include/c++/13/array:std::array<pointType, 225ul>::operator[](unsigned long) (14x)
+        154 ( 0.00%)          board[(i) * (BOARD_SIZE + 2)] = pointType::BLANK;
+        154 ( 0.00%)  => /usr/include/c++/13/array:std::array<pointType, 225ul>::operator[](unsigned long) (14x)
+        126 ( 0.00%)          board[(BOARD_SIZE + 1) * (BOARD_SIZE + 2) + i] = pointType::BLANK;
+        154 ( 0.00%)  => /usr/include/c++/13/array:std::array<pointType, 225ul>::operator[](unsigned long) (14x)
+        182 ( 0.00%)          board[(i + 1) * (BOARD_SIZE + 2) + (BOARD_SIZE + 1)] = pointType::BLANK;
+        154 ( 0.00%)  => /usr/include/c++/13/array:std::array<pointType, 225ul>::operator[](unsigned long) (14x)
+          .               }
+          .           
+          8 ( 0.00%)      this->directions = {-BOARD_SIZE - 2, -1, BOARD_SIZE + 2, 1};
+          8 ( 0.00%)      this->diagonals = {-BOARD_SIZE - 3, -BOARD_SIZE - 1, BOARD_SIZE + 1, BOARD_SIZE + 3};
+          .           
+          2 ( 0.00%)      zobrist = 0; // empty board state
+          .           
+          .               // set up random 64 bitstring generator
+          3 ( 0.00%)      std::random_device rd;
+        578 ( 0.00%)  => /usr/include/c++/13/bits/random.h:std::random_device::random_device() (1x)
+          .           
+          8 ( 0.00%)      std::mt19937_64 e2(rd());
+     23,690 ( 0.00%)  => /usr/include/c++/13/bits/random.h:std::mersenne_twister_engine<unsigned long, 64ul, 312ul, 156ul, 31ul, 13043109905998158313ul, 29ul, 6148914691236517205ul, 17ul, 8202884508482404352ul, 37ul, 18444473444759240704ul, 43ul, 6364136223846793005ul>::mersenne_twister_engine(unsigned long) (1x)
+         55 ( 0.00%)  => /usr/include/c++/13/bits/random.h:std::random_device::operator()() (1x)
+          .           
+         19 ( 0.00%)      std::uniform_int_distribution<long long int> dist(std::llround(std::pow(2, 61)), std::llround(std::pow(2, 62)));
+        296 ( 0.00%)  => /usr/include/c++/13/cmath:__gnu_cxx::__promote_2<decltype (((__gnu_cxx::__promote_2<int, std::__is_integer<int>::__value>::__type)(0))+((__gnu_cxx::__promote_2<int, std::__is_integer<int>::__value>::__type)(0))), std::__is_integer<decltype (((__gnu_cxx::__promote_2<int, std::__is_integer<int>::__value>::__type)(0))+((__gnu_cxx::__promote_2<int, std::__is_integer<int>::__value>::__type)(0)))>::__value>::__type std::pow<int, int>(int, int) (2x)
+         48 ( 0.00%)  => ???:0x000000000010c3e0 (2x)
+         43 ( 0.00%)  => /usr/include/c++/13/bits/uniform_int_dist.h:std::uniform_int_distribution<long long>::uniform_int_distribution(long long, long long) (1x)
+          .           
+      1,129 ( 0.00%)      for (uint16_t i = 0; i < NUM_POINTS; i++)
+          .               {
+      2,925 ( 0.00%)          zobrist_hashes_black[i] = dist(e2);
+     60,620 ( 0.00%)  => /usr/include/c++/13/bits/uniform_int_dist.h:long long std::uniform_int_distribution<long long>::operator()<std::mersenne_twister_engine<unsigned long, 64ul, 312ul, 156ul, 31ul, 13043109905998158313ul, 29ul, 6148914691236517205ul, 17ul, 8202884508482404352ul, 37ul, 18444473444759240704ul, 43ul, 6364136223846793005ul> >(std::mersenne_twister_engine<unsigned long, 64ul, 312ul, 156ul, 31ul, 13043109905998158313ul, 29ul, 6148914691236517205ul, 17ul, 8202884508482404352ul, 37ul, 18444473444759240704ul, 43ul, 6364136223846793005ul>&) (225x)
+      2,475 ( 0.00%)  => /usr/include/c++/13/array:std::array<unsigned long, 225ul>::operator[](unsigned long) (225x)
+      2,925 ( 0.00%)          zobrist_hashes_white[i] = dist(e2);
+     39,558 ( 0.00%)  => /usr/include/c++/13/bits/uniform_int_dist.h:long long std::uniform_int_distribution<long long>::operator()<std::mersenne_twister_engine<unsigned long, 64ul, 312ul, 156ul, 31ul, 13043109905998158313ul, 29ul, 6148914691236517205ul, 17ul, 8202884508482404352ul, 37ul, 18444473444759240704ul, 43ul, 6364136223846793005ul> >(std::mersenne_twister_engine<unsigned long, 64ul, 312ul, 156ul, 31ul, 13043109905998158313ul, 29ul, 6148914691236517205ul, 17ul, 8202884508482404352ul, 37ul, 18444473444759240704ul, 43ul, 6364136223846793005ul>&) (225x)
+      2,475 ( 0.00%)  => /usr/include/c++/13/array:std::array<unsigned long, 225ul>::operator[](unsigned long) (225x)
+          .               }
+          .           
+          2 ( 0.00%)      black_count = 0;
+          2 ( 0.00%)      white_count = 0;
+          2 ( 0.00%)      empty_count = (BOARD_SIZE) * (BOARD_SIZE);
+          .           
+          2 ( 0.00%)      play_count = 0;
+          2 ( 0.00%)      black_ko_hash = 0;
+          2 ( 0.00%)      white_ko_hash = 0;
+         10 ( 0.00%)  }
+         17 ( 0.00%)  => /usr/include/c++/13/bits/random.h:std::random_device::~random_device() (1x)
+          .           
+          .           uint16_t Board::get_liberties(uint16_t idx) const
+ 58,146,201 ( 0.04%)  {
+  6,460,689 ( 0.00%)      uint16_t num_liberties = 0;
+155,056,536 ( 0.12%)      for (uint16_t i = 0; i < 4; i++)
+          .               {
+491,012,364 ( 0.37%)          if (board[idx + directions[i]] == pointType::EMPTY)
+284,270,316 ( 0.21%)  => /usr/include/c++/13/array:std::array<int, 4ul>::operator[](unsigned long) const (25,842,756x)
+284,270,316 ( 0.21%)  => /usr/include/c++/13/array:std::array<pointType, 225ul>::operator[](unsigned long) const (25,842,756x)
+          .                   {
+ 59,617,305 ( 0.04%)              num_liberties++;
+          .                   }
+          .               }
+  6,460,689 ( 0.00%)      return num_liberties;
+ 32,303,445 ( 0.02%)  }
+          .           
+          .           void Board::print_board() const
+        500 ( 0.00%)  {
+      7,900 ( 0.00%)      for (uint16_t i = 0; i < (BOARD_SIZE + 2); i++)
+          .               {
+    118,500 ( 0.00%)          for (uint16_t j = 0; j < (BOARD_SIZE + 2); j++)
+          .                   {
+    539,352 ( 0.00%)              switch (board[i * (BOARD_SIZE + 2) + j])
+    247,500 ( 0.00%)  => /usr/include/c++/13/array:std::array<pointType, 225ul>::operator[](unsigned long) const (22,500x)
+          .                       {
+          .                       case pointType::BLANK:
+     28,000 ( 0.00%)                  std::cout << "# ";
+  1,593,816 ( 0.00%)  => ???:0x000000000010c4c0 (5,600x)
+      5,600 ( 0.00%)                  break;
+          .                       case pointType::EMPTY:
+     62,980 ( 0.00%)                  std::cout << "  ";
+  3,577,264 ( 0.00%)  => ???:0x000000000010c4c0 (12,596x)
+     12,596 ( 0.00%)                  break;
+          .                       case pointType::BLACK:
+     10,740 ( 0.00%)                  std::cout << "○ ";
+    625,068 ( 0.00%)  => ???:0x000000000010c4c0 (2,148x)
+      2,148 ( 0.00%)                  break;
+          .                       case pointType::WHITE:
+     10,780 ( 0.00%)                  std::cout << "● ";
+    627,396 ( 0.00%)  => ???:0x000000000010c4c0 (2,156x)
+      2,156 ( 0.00%)                  break;
+          .                       }
+          .                   }
+          .           
+      7,500 ( 0.00%)          std::cout << std::endl;
+    656,326 ( 0.00%)  => ???:0x000000000010c4f0 (1,500x)
+          .               }
+        500 ( 0.00%)      std::cout << std::endl;
+     43,400 ( 0.00%)  => ???:0x000000000010c4f0 (100x)
+          .           #if DEBUG
+          .           #if VERBOSE
+          .               std::cout << "Chain Roots" << std::endl;
+          .               std::cout << std::endl;
+          .           
+          .               for (uint16_t i = 0; i < (BOARD_SIZE + 2); i++)
+          .               {
+          .                   for (uint16_t j = 0; j < (BOARD_SIZE + 2); j++)
+-- line 96 ----------------------------------------
+-- line 160 ----------------------------------------
+          .                           printf("%3d", chain_sizes[i * (BOARD_SIZE + 2) + j]);
+          .                           break;
+          .                       }
+          .                   }
+          .                   std::cout << std::endl;
+          .               }
+          .           #endif
+          .           #endif
+        300 ( 0.00%)  }
+          .           
+          .           uint64_t Board::get_hash() const
+ 42,187,148 ( 0.03%)  {
+ 21,093,574 ( 0.02%)      return zobrist;
+ 21,093,574 ( 0.02%)  }
+          .           
+          .           bool Board::make_play(uint16_t idx)
+ 37,979,732 ( 0.03%)  {
+ 10,851,352 ( 0.01%)      if (idx == PASS)
+          .               {
+          .                   play_count++;
+          .                   return true;
+          .               }
+ 21,702,704 ( 0.02%)      bool color_to_move = whose_turn();
+ 65,108,112 ( 0.05%)  => src/Board.cpp:Board::whose_turn() const (5,425,676x)
+          .           
+ 37,979,732 ( 0.03%)      if (check_play(idx))
+43,119,348,061 (32.29%)  => /home/abhilasha/Dev/Programming/C++/StellaGo/src/BoardGameplay.cpp:Board::check_play(unsigned short) const (5,425,676x)
+          .               {
+          .                   // print_board();
+ 26,361,250 ( 0.02%)          update_chains(idx);
+36,130,479,955 (27.06%)  => /home/abhilasha/Dev/Programming/C++/StellaGo/src/BoardChainManagement.cpp:Board::update_chains(unsigned short) (5,272,250x)
+ 44,698,865 ( 0.03%)          set_point(idx, color_to_move ? pointType::BLACK : pointType::WHITE);
+1,075,539,000 ( 0.81%)  => /home/abhilasha/Dev/Programming/C++/StellaGo/src/BoardStates.cpp:Board::set_point(unsigned short, pointType) (5,272,250x)
+ 26,361,250 ( 0.02%)          play_count++;
+ 10,544,500 ( 0.01%)          if (color_to_move)
+          .                   {
+ 15,125,190 ( 0.01%)              black_ko_hash = get_hash();
+ 20,166,920 ( 0.02%)  => src/Board.cpp:Board::get_hash() const (2,520,865x)
+          .                   }
+          .                   else
+          .                   {
+ 13,756,925 ( 0.01%)              white_ko_hash = get_hash();
+ 22,011,080 ( 0.02%)  => src/Board.cpp:Board::get_hash() const (2,751,385x)
+          .                   }
+          .           #if DEBUG
+          .                   print_board();
+          .                   check_for_errors();
+          .           #endif
+ 10,544,500 ( 0.01%)          return true;
+          .               }
+    153,426 ( 0.00%)      return false;
+ 10,851,352 ( 0.01%)  }
+          .           
+          .           bool Board::whose_turn() const
+129,269,236 ( 0.10%)  {
+193,903,854 ( 0.15%)      return (play_count & 1) == 0;
+ 64,634,618 ( 0.05%)  }
+          .           
+          .           uint16_t Board::get_play_count() const
+          .           {
+          .               return play_count;
+          .           }
+          .           
+          .           void Board::check_for_errors() const
+          .           {
+-- line 218 ----------------------------------------
+
+--------------------------------------------------------------------------------
+-- Auto-annotated source: src/BoardChainManagement.cpp
+--------------------------------------------------------------------------------
+Ir                      
+
+             .           #include <iostream>
+             .           #include <random>
+             .           #include <cmath>
+             .           
+             .           #include "Board.h"
+             .           
+             .           void Board::create_chain(uint16_t idx)
+    51,685,512 ( 0.04%)  {
+    51,685,512 ( 0.04%)      chain_roots[idx] = idx;
+    71,067,579 ( 0.05%)  => /usr/include/c++/13/array:std::array<unsigned short, 225ul>::operator[](unsigned long) (6,460,689x)
+    83,988,957 ( 0.06%)      chain_liberties[idx] = get_liberties(idx);
+ 1,377,597,861 ( 1.03%)  => /home/abhilasha/Dev/Programming/C++/StellaGo/src/Board.cpp:Board::get_liberties(unsigned short) const (6,460,689x)
+    71,067,579 ( 0.05%)  => /usr/include/c++/13/array:std::array<unsigned short, 225ul>::operator[](unsigned long) (6,460,689x)
+    45,224,823 ( 0.03%)      chain_sizes[idx] = 1;
+    71,067,579 ( 0.05%)  => /usr/include/c++/13/array:std::array<unsigned short, 225ul>::operator[](unsigned long) (6,460,689x)
+    25,842,756 ( 0.02%)  }
+             .           
+             .           void Board::extend_chain(uint16_t idx, uint16_t adj_stone)
+    30,468,264 ( 0.02%)  {
+    20,312,176 ( 0.02%)      uint16_t chain_id = chain_roots[adj_stone];
+    27,929,242 ( 0.02%)  => /usr/include/c++/13/array:std::array<unsigned short, 225ul>::operator[](unsigned long) (2,539,022x)
+    20,312,176 ( 0.02%)      chain_roots[idx] = chain_id;
+    27,929,242 ( 0.02%)  => /usr/include/c++/13/array:std::array<unsigned short, 225ul>::operator[](unsigned long) (2,539,022x)
+    22,851,198 ( 0.02%)      chain_sizes[chain_id]++;
+    27,929,242 ( 0.02%)  => /usr/include/c++/13/array:std::array<unsigned short, 225ul>::operator[](unsigned long) (2,539,022x)
+    22,851,198 ( 0.02%)      chain_liberties[chain_id]--;
+    27,929,242 ( 0.02%)  => /usr/include/c++/13/array:std::array<unsigned short, 225ul>::operator[](unsigned long) (2,539,022x)
+             .           
+    60,936,528 ( 0.05%)      for (uint16_t i = 0; i < 4; i++)
+             .               {
+   192,965,672 ( 0.14%)          if (board[idx + directions[i]] == pointType::EMPTY)
+   111,716,968 ( 0.08%)  => /usr/include/c++/13/array:std::array<int, 4ul>::operator[](unsigned long) (10,156,088x)
+   111,716,968 ( 0.08%)  => /usr/include/c++/13/array:std::array<pointType, 225ul>::operator[](unsigned long) (10,156,088x)
+             .                   // for each liberty of the new stone
+             .                   {
+     4,569,972 ( 0.00%)              bool already_counted = false;
+   108,894,088 ( 0.08%)              for (uint16_t j = 0; j < 4; j++)
+             .                       {
+   309,173,662 ( 0.23%)                  if (directions[i] + directions[j] == 0)
+   400,107,092 ( 0.30%)  => /usr/include/c++/13/array:std::array<int, 4ul>::operator[](unsigned long) (36,373,372x)
+             .                           {
+     4,521,734 ( 0.00%)                      continue;
+             .                           }
+   355,288,752 ( 0.27%)                  if (chain_roots[idx + directions[i] + directions[j]] == chain_id)
+   300,628,944 ( 0.23%)  => /usr/include/c++/13/array:std::array<int, 4ul>::operator[](unsigned long) (27,329,904x)
+   150,314,472 ( 0.11%)  => /usr/include/c++/13/array:std::array<unsigned short, 225ul>::operator[](unsigned long) (13,664,952x)
+             .                           {
+             .                               // check that it's not already counted as a chain liberty
+        63,846 ( 0.00%)                      already_counted = true;
+        63,846 ( 0.00%)                      break;
+             .                           }
+             .                       }
+    18,279,888 ( 0.01%)              if (!already_counted)
+             .                       {
+    40,555,134 ( 0.03%)                  chain_liberties[chain_id]++;
+    49,567,386 ( 0.04%)  => /usr/include/c++/13/array:std::array<unsigned short, 225ul>::operator[](unsigned long) (4,506,126x)
+             .                           // if a liberty of the new stone doesn't border the chain already then add it for a new liberty
+             .                       }
+             .                   }
+             .               }
+    17,773,154 ( 0.01%)  }
+             .           
+             .           void Board::merge_chains(std::array<uint16_t, 4> neighbor_roots, uint16_t num_neighbors, uint16_t idx)
+    17,017,836 ( 0.01%)  {
+             .           #if DEBUG
+             .               assert(num_neighbors > 1);
+             .               for (uint16_t i = 0; i < num_neighbors; i++)
+             .               {
+             .                   if (i < num_neighbors)
+             .                   {
+             .                       assert(neighbor_roots[i] != 0);
+             .                   }
+             .                   else
+             .                   {
+             .                       assert(neighbor_roots[i] == 0);
+             .                   }
+             .               }
+             .           #endif
+             .           
+     9,282,456 ( 0.01%)      uint16_t new_root = neighbor_roots[0];
+    17,017,836 ( 0.01%)  => /usr/include/c++/13/array:std::array<unsigned short, 4ul>::operator[](unsigned long) (1,547,076x)
+             .               // pick root of first chain to be root of new merged one
+             .           
+    13,923,684 ( 0.01%)      uint16_t chain_size = chain_sizes[new_root] + 1;
+    17,017,836 ( 0.01%)  => /usr/include/c++/13/array:std::array<unsigned short, 225ul>::operator[](unsigned long) (1,547,076x)
+             .               // add 1 for new stone
+             .           
+    22,132,644 ( 0.02%)      for (uint16_t i = 1; i < num_neighbors; i++)
+             .               {
+    33,593,616 ( 0.03%)          chain_size += chain_sizes[neighbor_roots[i]];
+    26,394,984 ( 0.02%)  => /usr/include/c++/13/array:std::array<unsigned short, 225ul>::operator[](unsigned long) (2,399,544x)
+    26,394,984 ( 0.02%)  => /usr/include/c++/13/array:std::array<unsigned short, 4ul>::operator[](unsigned long) (2,399,544x)
+    31,194,072 ( 0.02%)          chain_sizes[neighbor_roots[i]] = 0;
+    26,394,984 ( 0.02%)  => /usr/include/c++/13/array:std::array<unsigned short, 225ul>::operator[](unsigned long) (2,399,544x)
+    26,394,984 ( 0.02%)  => /usr/include/c++/13/array:std::array<unsigned short, 4ul>::operator[](unsigned long) (2,399,544x)
+             .                   // sum collective size and clear out afterwards
+             .               }
+             .           
+    31,415,100 ( 0.02%)      for (uint16_t i = 0; i < num_neighbors; i++)
+             .               {
+    51,306,060 ( 0.04%)          chain_liberties[neighbor_roots[i]] = 0;
+    43,412,820 ( 0.03%)  => /usr/include/c++/13/array:std::array<unsigned short, 225ul>::operator[](unsigned long) (3,946,620x)
+    43,412,820 ( 0.03%)  => /usr/include/c++/13/array:std::array<unsigned short, 4ul>::operator[](unsigned long) (3,946,620x)
+             .                   // update sizes and liberties
+             .               }
+    12,376,608 ( 0.01%)      chain_sizes[new_root] = chain_size;
+    17,017,836 ( 0.01%)  => /usr/include/c++/13/array:std::array<unsigned short, 225ul>::operator[](unsigned long) (1,547,076x)
+             .           
+             .               // update chain roots
+             .           
+ 1,746,648,804 ( 1.31%)      for (uint16_t i = 0; i < NUM_POINTS; i++)
+             .               {
+ 3,829,013,100 ( 2.87%)          if (chain_roots[i] == 0)
+ 3,829,013,100 ( 2.87%)  => /usr/include/c++/13/array:std::array<unsigned short, 225ul>::operator[](unsigned long) (348,092,100x)
+             .                   {
+             .                       // if empty
+   260,690,268 ( 0.20%)              continue;
+             .                   }
+ 1,327,235,560 ( 0.99%)          for (uint16_t j = 1; j < num_neighbors; j++)
+             .                   {
+             .           
+ 2,337,135,962 ( 1.75%)              if (chain_roots[i] == neighbor_roots[j])
+ 1,512,264,446 ( 1.13%)  => /usr/include/c++/13/array:std::array<unsigned short, 225ul>::operator[](unsigned long) (137,478,586x)
+ 1,512,264,446 ( 1.13%)  => /usr/include/c++/13/array:std::array<unsigned short, 4ul>::operator[](unsigned long) (137,478,586x)
+             .                       {
+    25,196,512 ( 0.02%)                  chain_roots[i] = new_root;
+    34,645,204 ( 0.03%)  => /usr/include/c++/13/array:std::array<unsigned short, 225ul>::operator[](unsigned long) (3,149,564x)
+     3,149,564 ( 0.00%)                  break;
+             .                       }
+             .                   }
+             .               }
+             .           
+    12,376,608 ( 0.01%)      chain_roots[idx] = new_root;
+    17,017,836 ( 0.01%)  => /usr/include/c++/13/array:std::array<unsigned short, 225ul>::operator[](unsigned long) (1,547,076x)
+             .           
+     1,547,076 ( 0.00%)      uint16_t num_liberties = 0;
+ 1,746,648,804 ( 1.31%)      for (uint16_t i = 0; i < NUM_POINTS; i++)
+             .               {
+ 3,829,013,100 ( 2.87%)          if (board[i] == pointType::EMPTY)
+ 3,829,013,100 ( 2.87%)  => /usr/include/c++/13/array:std::array<pointType, 225ul>::operator[](unsigned long) (348,092,100x)
+             .                   {
+   522,162,036 ( 0.39%)              if (i == idx)
+             .                       {
+     1,547,076 ( 0.00%)                  continue;
+             .                       }
+ 4,205,427,670 ( 3.15%)              for (uint16_t j = 0; j < 4; j++)
+             .                       {
+12,870,030,494 ( 9.64%)                  if (chain_roots[i + directions[j]] == new_root)
+ 7,451,070,286 ( 5.58%)  => /usr/include/c++/13/array:std::array<unsigned short, 225ul>::operator[](unsigned long) (677,370,026x)
+ 7,451,070,286 ( 5.58%)  => /usr/include/c++/13/array:std::array<int, 4ul>::operator[](unsigned long) (677,370,026x)
+             .                           {
+    21,978,570 ( 0.02%)                      num_liberties++;
+     7,326,190 ( 0.01%)                      break;
+             .                           }
+             .                       }
+             .                   }
+             .               }
+             .           
+    12,376,608 ( 0.01%)      chain_liberties[new_root] = num_liberties;
+    17,017,836 ( 0.01%)  => /usr/include/c++/13/array:std::array<unsigned short, 225ul>::operator[](unsigned long) (1,547,076x)
+     9,282,456 ( 0.01%)  }
+             .           
+             .           void Board::capture_chain(uint16_t chain_root)
+     1,566,719 ( 0.00%)  {
+             .           #if DEBUG
+             .               assert(chain_liberties[chain_root] == 0);
+             .           #endif
+     1,566,719 ( 0.00%)      chain_sizes[chain_root] = 0;
+     2,461,987 ( 0.00%)  => /usr/include/c++/13/array:std::array<unsigned short, 225ul>::operator[](unsigned long) (223,817x)
+             .           
+   252,689,393 ( 0.19%)      for (uint16_t i = 0; i < NUM_POINTS; i++)
+             .               {
+   553,947,075 ( 0.41%)          if (chain_roots[i] == chain_root)
+   553,947,075 ( 0.41%)  => /usr/include/c++/13/array:std::array<unsigned short, 225ul>::operator[](unsigned long) (50,358,825x)
+             .                   {
+     1,683,325 ( 0.00%)              chain_roots[i] = 0;
+     2,645,225 ( 0.00%)  => /usr/include/c++/13/array:std::array<unsigned short, 225ul>::operator[](unsigned long) (240,475x)
+     1,442,850 ( 0.00%)              set_point(i, pointType::EMPTY);
+   159,408,162 ( 0.12%)  => /home/abhilasha/Dev/Programming/C++/StellaGo/src/BoardStates.cpp:Board::set_point(unsigned short, pointType) (240,475x)
+             .                   }
+             .               }
+     1,566,719 ( 0.00%)      chain_liberties[chain_root] = 0;
+     2,461,987 ( 0.00%)  => /usr/include/c++/13/array:std::array<unsigned short, 225ul>::operator[](unsigned long) (223,817x)
+             .               // we need this since set point adds liberties to adjacent chains on removal
+       671,451 ( 0.00%)  }
+             .           
+             .           void Board::update_chains(uint16_t idx)
+   116,014,657 ( 0.09%)  {
+    63,280,722 ( 0.05%)      struct nbrs n = get_nbrs(idx);
+ 3,233,206,143 ( 2.42%)  => /home/abhilasha/Dev/Programming/C++/StellaGo/src/BoardStates.cpp:Board::get_nbrs(unsigned short) const (10,546,787x)
+             .           
+    42,187,148 ( 0.03%)      bool side = whose_turn();
+   126,561,444 ( 0.09%)  => /home/abhilasha/Dev/Programming/C++/StellaGo/src/Board.cpp:Board::whose_turn() const (10,546,787x)
+             .           
+    47,230,035 ( 0.04%)      pointType oppositeSide = side ? pointType::WHITE : pointType::BLACK;
+    47,230,035 ( 0.04%)      pointType sameSide = side ? pointType::BLACK : pointType::WHITE;
+             .           
+    78,870,396 ( 0.06%)      uint16_t num_same_color = ((side ? n.black : n.white) & COUNT) >> 4U;
+             .           
+    21,093,574 ( 0.02%)      std::array<int, 4> prev_chains{};
+    10,546,787 ( 0.01%)      uint16_t prev_chain_count = 0;
+   253,122,888 ( 0.19%)      for (uint16_t i = 0; i < 4; i++)
+             .               {
+   421,871,480 ( 0.32%)          uint16_t neighbor = idx + directions[i];
+   464,058,628 ( 0.35%)  => /usr/include/c++/13/array:std::array<int, 4ul>::operator[](unsigned long) (42,187,148x)
+   464,058,628 ( 0.35%)          if (board[neighbor] == oppositeSide)
+   464,058,628 ( 0.35%)  => /usr/include/c++/13/array:std::array<pointType, 225ul>::operator[](unsigned long) (42,187,148x)
+             .                   {
+    46,867,760 ( 0.04%)              uint16_t chain_id = chain_roots[neighbor];
+    64,443,170 ( 0.05%)  => /usr/include/c++/13/array:std::array<unsigned short, 225ul>::operator[](unsigned long) (5,858,470x)
+             .           #if DEBUG
+             .                       assert(chain_roots[neighbor] != 0);
+             .                       assert(chain_liberties[chain_roots[neighbor]] != 0);
+             .                       assert(chain_sizes[chain_roots[neighbor]] != 0);
+             .           #endif
+     5,858,470 ( 0.00%)              bool dupl = false;
+    43,425,584 ( 0.03%)              for (uint16_t x = 0; x < prev_chain_count; x++)
+             .           
+             .                       {
+    26,537,566 ( 0.02%)                  if (prev_chains[x] == chain_id)
+    26,537,566 ( 0.02%)  => /usr/include/c++/13/array:std::array<int, 4ul>::operator[](unsigned long) (2,412,506x)
+             .                           {
+        56,967 ( 0.00%)                      dupl = true;
+        56,967 ( 0.00%)                      break;
+             .                           }
+             .                       }
+             .           
+    23,433,880 ( 0.02%)              if (!dupl)
+             .                       {
+    40,610,521 ( 0.03%)                  prev_chains[prev_chain_count] = chain_id;
+    63,816,533 ( 0.05%)  => /usr/include/c++/13/array:std::array<int, 4ul>::operator[](unsigned long) (5,801,503x)
+    17,404,509 ( 0.01%)                  prev_chain_count++;
+             .           
+    52,213,527 ( 0.04%)                  chain_liberties[chain_id]--;
+    63,816,533 ( 0.05%)  => /usr/include/c++/13/array:std::array<unsigned short, 225ul>::operator[](unsigned long) (5,801,503x)
+    63,816,533 ( 0.05%)                  if (chain_liberties[chain_id] == 0)
+    63,816,533 ( 0.05%)  => /usr/include/c++/13/array:std::array<unsigned short, 225ul>::operator[](unsigned long) (5,801,503x)
+             .                           {
+     1,119,085 ( 0.00%)                      capture_chain(chain_id);
+ 1,536,058,687 ( 1.15%)  => src/BoardChainManagement.cpp:Board::capture_chain(unsigned short) (223,817x)
+             .                           }
+             .                       }
+             .                   }
+             .               }
+             .           
+    21,093,574 ( 0.02%)      if (num_same_color == 0)
+             .               {
+             .                   // new chain
+    32,303,445 ( 0.02%)          create_chain(idx);
+ 1,849,228,158 ( 1.38%)  => src/BoardChainManagement.cpp:Board::create_chain(unsigned short) (6,460,689x)
+             .               }
+             .           
+     8,172,196 ( 0.01%)      else if (num_same_color == 1)
+             .               {
+             .                   // extension
+    29,651,438 ( 0.02%)          for (uint16_t i = 0; i < 4; i++)
+             .                   {
+    64,379,800 ( 0.05%)              uint16_t neighbor = idx + directions[i];
+    70,817,780 ( 0.05%)  => /usr/include/c++/13/array:std::array<int, 4ul>::operator[](unsigned long) (6,437,980x)
+    70,817,780 ( 0.05%)              if (board[neighbor] == sameSide)
+    70,817,780 ( 0.05%)  => /usr/include/c++/13/array:std::array<pointType, 225ul>::operator[](unsigned long) (6,437,980x)
+             .                       {
+    15,230,772 ( 0.01%)                  extend_chain(idx, neighbor);
+ 2,465,225,250 ( 1.85%)  => src/BoardChainManagement.cpp:Board::extend_chain(unsigned short, unsigned short) (2,538,462x)
+     2,538,462 ( 0.00%)                  break;
+             .                       }
+             .                   }
+             .               }
+             .           
+             .               else
+             .               {
+             .                   // merger or extension
+             .           
+     1,547,636 ( 0.00%)          std::array<uint16_t, 4> same_color_chains{};
+     1,547,636 ( 0.00%)          uint16_t same_color_count = 0;
+    37,143,264 ( 0.03%)          for (uint16_t i = 0; i < 4; i++)
+             .                   {
+    61,905,440 ( 0.05%)              uint16_t neighbor = idx + directions[i];
+    68,095,984 ( 0.05%)  => /usr/include/c++/13/array:std::array<int, 4ul>::operator[](unsigned long) (6,190,544x)
+    68,095,984 ( 0.05%)              if (board[neighbor] == sameSide)
+    68,095,984 ( 0.05%)  => /usr/include/c++/13/array:std::array<pointType, 225ul>::operator[](unsigned long) (6,190,544x)
+             .                       {
+    32,347,648 ( 0.02%)                  uint16_t chain_id = chain_roots[neighbor];
+    44,478,016 ( 0.03%)  => /usr/include/c++/13/array:std::array<unsigned short, 225ul>::operator[](unsigned long) (4,043,456x)
+             .           
+     4,043,456 ( 0.00%)                  bool dupl = false;
+    41,036,836 ( 0.03%)                  for (uint16_t x = 0; x < same_color_count; x++)
+             .                           {
+    35,662,020 ( 0.03%)                      if (same_color_chains[x] == chain_id)
+    39,228,222 ( 0.03%)  => /usr/include/c++/13/array:std::array<unsigned short, 4ul>::operator[](unsigned long) (3,566,202x)
+             .                               {
+        96,276 ( 0.00%)                          dupl = true;
+        96,276 ( 0.00%)                          break;
+             .                               }
+             .                           }
+             .           
+    16,173,824 ( 0.01%)                  if (!dupl)
+             .                           {
+    27,630,260 ( 0.02%)                      same_color_chains[same_color_count] = chain_id;
+    43,418,980 ( 0.03%)  => /usr/include/c++/13/array:std::array<unsigned short, 4ul>::operator[](unsigned long) (3,947,180x)
+    11,841,540 ( 0.01%)                      same_color_count++;
+             .                           }
+             .                       }
+             .                   }
+             .           
+             .           #if DEBUG
+             .                   assert(same_color_count > 0);
+             .           #endif
+             .           
+     3,095,272 ( 0.00%)          if (same_color_count == 1)
+             .                   {
+         6,160 ( 0.00%)              extend_chain(idx, same_color_chains[0]);
+       424,836 ( 0.00%)  => src/BoardChainManagement.cpp:Board::extend_chain(unsigned short, unsigned short) (560x)
+         6,160 ( 0.00%)  => /usr/include/c++/13/array:std::array<unsigned short, 4ul>::operator[](unsigned long) (560x)
+             .                   }
+             .                   else
+             .                   {
+     9,282,456 ( 0.01%)              merge_chains(same_color_chains, same_color_count, idx);
+58,887,864,158 (44.10%)  => src/BoardChainManagement.cpp:Board::merge_chains(std::array<unsigned short, 4ul>, unsigned short, unsigned short) (1,547,076x)
+             .                   }
+             .               }
+    82,827,220 ( 0.06%)  }
+--------------------------------------------------------------------------------
+-- Auto-annotated source: src/BoardGameplay.cpp
+--------------------------------------------------------------------------------
+Ir                     
+
+            .           #include <iostream>
+            .           #include <random>
+            .           #include <cmath>
+            .           
+            .           #include "Board.h"
+            .           
+            .           bool Board::check_play(uint16_t idx) const
+   70,533,788 ( 0.05%)  {
+   59,682,436 ( 0.04%)      if (board[idx] != pointType::EMPTY)
+   59,682,436 ( 0.04%)  => /usr/include/c++/13/array:std::array<pointType, 225ul>::operator[](unsigned long) const (5,425,676x)
+            .               {
+            .                   return false;
+            .               }
+            .           
+   37,979,732 ( 0.03%)      if (is_suicide(idx))
+  862,834,709 ( 0.65%)  => src/BoardGameplay.cpp:Board::is_suicide(unsigned short) const (5,425,676x)
+            .               {
+      302,278 ( 0.00%)          return false;
+            .               }
+            .           
+   21,098,148 ( 0.02%)      bool color_to_move = whose_turn();
+   63,294,444 ( 0.05%)  => /home/abhilasha/Dev/Programming/C++/StellaGo/src/Board.cpp:Board::whose_turn() const (5,274,537x)
+            .           
+            .               // ko checking
+            .           
+4,536,101,820 ( 3.40%)      Board copy = *this;
+   26,372,685 ( 0.02%)      copy.update_chains(idx);
+36,149,069,608 (27.07%)  => /home/abhilasha/Dev/Programming/C++/StellaGo/src/BoardChainManagement.cpp:Board::update_chains(unsigned short) (5,274,537x)
+            .           
+   10,549,074 ( 0.01%)      if (color_to_move)
+            .               {
+            .                   // black to move
+   15,132,132 ( 0.01%)          copy.set_point(idx, pointType::BLACK);
+  514,492,488 ( 0.39%)  => /home/abhilasha/Dev/Programming/C++/StellaGo/src/BoardStates.cpp:Board::set_point(unsigned short, pointType) (2,522,022x)
+   20,176,176 ( 0.02%)          return black_ko_hash != copy.get_hash();
+   20,176,176 ( 0.02%)  => /home/abhilasha/Dev/Programming/C++/StellaGo/src/Board.cpp:Board::get_hash() const (2,522,022x)
+            .                   // if hashes are different not a repeat (except in case of hash collision ig)
+            .               }
+            .               else
+            .               {
+            .                   // white to move
+   16,515,090 ( 0.01%)          copy.set_point(idx, pointType::WHITE);
+  561,513,060 ( 0.42%)  => /home/abhilasha/Dev/Programming/C++/StellaGo/src/BoardStates.cpp:Board::set_point(unsigned short, pointType) (2,752,515x)
+   19,267,605 ( 0.01%)          return white_ko_hash != copy.get_hash();
+   22,020,120 ( 0.02%)  => /home/abhilasha/Dev/Programming/C++/StellaGo/src/Board.cpp:Board::get_hash() const (2,752,515x)
+            .                   // if hashes are different not a repeat (except in case of hash collision ig)
+            .               }
+   32,554,056 ( 0.02%)  }
+            .           
+            .           bool Board::is_suicide(uint16_t idx) const
+   48,831,084 ( 0.04%)  {
+            .               // check if move is suicide
+            .               // if all neighboring opposite color chains have at least 2 liberties (one for stone to be added and another one for safety, they cant be captured)
+            .               //
+            .               // and no neighboring same color chain has at least 2 liberties (one for stone to be added, it can be captured) then it is suicide
+            .           
+            .               // if a neighboring opposite color chain has < 2 liberties or a neighboring same color chain has > 1 liberties then it is not suicide
+   21,702,704 ( 0.02%)      bool color_to_move = whose_turn();
+   65,108,112 ( 0.05%)  => /home/abhilasha/Dev/Programming/C++/StellaGo/src/Board.cpp:Board::whose_turn() const (5,425,676x)
+            .           
+   30,444,999 ( 0.02%)      for (uint16_t i = 0; i < 4; i++)
+            .               {
+  112,367,936 ( 0.08%)          uint16_t chain_id = chain_roots[idx + directions[i]];
+   77,252,956 ( 0.06%)  => /usr/include/c++/13/array:std::array<int, 4ul>::operator[](unsigned long) const (7,022,996x)
+   77,252,956 ( 0.06%)  => /usr/include/c++/13/array:std::array<unsigned short, 225ul>::operator[](unsigned long) const (7,022,996x)
+  167,418,806 ( 0.13%)          switch (board[idx + directions[i]])
+   77,252,956 ( 0.06%)  => /usr/include/c++/13/array:std::array<int, 4ul>::operator[](unsigned long) const (7,022,996x)
+   77,252,956 ( 0.06%)  => /usr/include/c++/13/array:std::array<pointType, 225ul>::operator[](unsigned long) const (7,022,996x)
+            .                   {
+            .                   case pointType::BLANK:
+      532,600 ( 0.00%)              break;
+            .                   case pointType::EMPTY:
+            .                       // if there's a liberty its not suicide
+    8,132,238 ( 0.01%)              return false;
+            .                   case pointType::BLACK:
+    2,618,142 ( 0.00%)              if (color_to_move)
+            .                       {
+            .                           // same color chain
+    5,518,227 ( 0.00%)                  if (chain_liberties[chain_id] > 1)
+    5,518,227 ( 0.00%)  => /usr/include/c++/13/array:std::array<unsigned short, 225ul>::operator[](unsigned long) const (501,657x)
+            .                           {
+      972,126 ( 0.00%)                      return false;
+            .                           }
+            .                       }
+            .                       else
+            .                       // diff color chain
+            .                       {
+    8,881,554 ( 0.01%)                  if (chain_liberties[chain_id] < 2)
+    8,881,554 ( 0.01%)  => /usr/include/c++/13/array:std::array<unsigned short, 225ul>::operator[](unsigned long) const (807,414x)
+            .                           {
+      107,952 ( 0.00%)                      return false;
+            .                           }
+            .                       }
+    1,538,064 ( 0.00%)              break;
+            .                   case pointType::WHITE:
+    5,526,024 ( 0.00%)              if (!color_to_move)
+            .                       {
+            .                           // same color chain
+    7,242,928 ( 0.01%)                  if (chain_liberties[chain_id] > 1)
+    7,242,928 ( 0.01%)  => /usr/include/c++/13/array:std::array<unsigned short, 225ul>::operator[](unsigned long) const (658,448x)
+            .                           {
+    1,301,600 ( 0.00%)                      return false;
+            .                           }
+            .                       }
+            .                       else
+            .                       // diff color chain
+            .                       {
+    7,953,638 ( 0.01%)                  if (chain_liberties[chain_id] < 2)
+    7,953,638 ( 0.01%)  => /usr/include/c++/13/array:std::array<unsigned short, 225ul>::operator[](unsigned long) const (723,058x)
+            .                           {
+       35,158 ( 0.00%)                      return false;
+            .                           }
+            .                       }
+      713,127 ( 0.00%)              break;
+            .                   }
+            .               }
+            .           
+      151,139 ( 0.00%)      return true;
+   27,128,380 ( 0.02%)  }
+--------------------------------------------------------------------------------
+-- Auto-annotated source: src/Agent.cpp
+--------------------------------------------------------------------------------
+Ir                     
+
+            .           #include "Agent.h"
+            .           #include "Config.h"
+            .           #include <iostream>
+            .           
+            .           #define MIN_SCORE -32768
+            .           #define MAX_SCORE 32767
+            .           
+            .           std::pair<uint16_t, int16_t> Agent::get_best_move(Board b, uint8_t depth)
+        1,000 ( 0.00%)  {
+            .               // todo: make hash table for best moves
+          200 ( 0.00%)      assert(depth > 0);
+       87,100 ( 0.00%)      std::pair<uint16_t, int16_t> results = alphabeta(Board(b), depth, MIN_SCORE, MAX_SCORE);
+133,528,990,790 (99.99%)  => src/Agent.cpp:Agent::alphabeta(Board, unsigned char, short, short) (100x)
+          100 ( 0.00%)      return results;
+          500 ( 0.00%)  }
+            .           
+            .           std::pair<uint16_t, int16_t> Agent::alphabeta(Board b, uint8_t depth, int16_t alpha, int16_t beta)
+   79,083,750 ( 0.06%)  {
+   10,544,500 ( 0.01%)      if (depth < 1)
+            .               {
+   60,638,316 ( 0.05%)          return std::pair<uint16_t, int16_t>(0, b.score());
+41,200,957,286 (30.85%)  => /home/abhilasha/Dev/Programming/C++/StellaGo/src/BoardStates.cpp:Board::score() const (5,053,193x)
+  186,968,141 ( 0.14%)  => /usr/include/c++/13/bits/stl_pair.h:std::pair<unsigned short, short>::pair<int, short>(int&&, short&&) (5,053,193x)
+            .               }
+      219,057 ( 0.00%)      int16_t value = 0;
+      219,057 ( 0.00%)      uint16_t best_move = PASS;
+    1,414,387 ( 0.00%)      value = b.whose_turn() ? MIN_SCORE : MAX_SCORE;
+        1,200 ( 0.00%)  => /home/abhilasha/Dev/Programming/C++/StellaGo/src/Board.cpp:Board::whose_turn() const (100x)
+   79,064,786 ( 0.06%)      for (int idx = 0; idx < 361; idx++)
+            .               {
+  209,951,160 ( 0.16%)          int i = optimal_move_checking_order[idx];
+      397,100 ( 0.00%)  => /usr/include/c++/13/array:std::array<int, 361ul>::operator[](unsigned long) const (36,100x)
+  236,195,055 ( 0.18%)          if (b.get_point(i) == pointType::EMPTY)
+      974,700 ( 0.00%)  => /home/abhilasha/Dev/Programming/C++/StellaGo/src/BoardStates.cpp:Board::get_point(unsigned short) const (36,100x)
+            .                   {
+   21,702,304 ( 0.02%)              if (b.whose_turn())
+      128,052 ( 0.00%)  => /home/abhilasha/Dev/Programming/C++/StellaGo/src/Board.cpp:Board::whose_turn() const (10,671x)
+            .                       {
+2,257,124,646 ( 1.69%)                  if (evaluate_move_black(b, i, depth, alpha, beta, value, best_move))
+55,499,023,296 (41.56%)  => src/Agent.cpp:Agent::evaluate_move_black(Board, int, unsigned char, short&, short, short&, unsigned short&) (5,354x)
+            .                           {
+       86,888 ( 0.00%)                      break;
+            .                           }
+            .                       }
+            .                       else
+            .                       {
+2,506,531,082 ( 1.88%)                  if (evaluate_move_white(b, i, depth, alpha, beta, value, best_move))
+78,018,324,470 (58.42%)  => src/Agent.cpp:Agent::evaluate_move_white(Board, int, unsigned char, short, short&, short&, unsigned short&) (5,317x)
+            .                           {
+      103,658 ( 0.00%)                      break;
+            .                           }
+            .                       }
+            .                   }
+            .               }
+            .           
+    1,533,399 ( 0.00%)      return std::pair<uint16_t, int16_t>(best_move, value);
+        3,600 ( 0.00%)  => /usr/include/c++/13/bits/stl_pair.h:std::pair<unsigned short, short>::pair<unsigned short&, short&>(unsigned short&, short&) (100x)
+   42,178,000 ( 0.03%)  }
+            .           
+            .           bool Agent::evaluate_move_white(Board b, int i, uint8_t depth, int16_t alpha, int16_t &beta, int16_t &value, uint16_t &best_move)
+   31,403,009 ( 0.02%)  {
+   19,983,733 ( 0.01%)      if (b.make_play(i))
+1,609,673,072 ( 1.21%)  => /home/abhilasha/Dev/Programming/C++/StellaGo/src/Board.cpp:Board::make_play(unsigned short) (101,912x)
+            .               {
+2,412,920,795 ( 1.81%)          std::pair<uint16_t, int16_t> look_ahead = alphabeta(b, depth - 1, alpha, beta);
+131,647,010,887 (98.58%)  => src/Agent.cpp:Agent::alphabeta(Board, unsigned char, short, short)'2 (99,995x)
+    5,502,670 ( 0.00%)          int score =
+    2,751,335 ( 0.00%)              look_ahead.second;
+   13,756,675 ( 0.01%)          if (score < value)
+            .                   {
+    1,187,360 ( 0.00%)              best_move = i;
+    1,187,360 ( 0.00%)              value = score;
+            .                   }
+   11,005,340 ( 0.01%)          if (value <= alpha)
+            .                   {
+            .                       {
+      207,316 ( 0.00%)                  return true;
+            .                       };
+            .                   }
+   27,254,921 ( 0.02%)          beta = beta < value ? beta : value;
+            .               }
+    2,751,161 ( 0.00%)      return false;
+    5,709,638 ( 0.00%)  }
+            .           
+            .           bool Agent::evaluate_move_black(Board b, int i, uint8_t depth, int16_t &alpha, int16_t beta, int16_t &value, uint16_t &best_move)
+   33,419,841 ( 0.03%)  {
+   17,995,299 ( 0.01%)      if (b.make_play(i))
+1,727,419,263 ( 1.29%)  => /home/abhilasha/Dev/Programming/C++/StellaGo/src/Board.cpp:Board::make_play(unsigned short) (122,439x)
+            .               {
+2,210,754,755 ( 1.66%)          std::pair<uint16_t, int16_t> look_ahead = alphabeta(b, depth - 1, alpha, beta);
+131,483,033,160 (98.46%)  => src/Agent.cpp:Agent::alphabeta(Board, unsigned char, short, short)'2 (118,962x)
+    5,041,630 ( 0.00%)          int score =
+    2,520,815 ( 0.00%)              look_ahead.second;
+   12,604,075 ( 0.01%)          if (score > value)
+            .                   {
+      955,636 ( 0.00%)              best_move = i;
+      955,636 ( 0.00%)              value = score;
+            .                   }
+   10,083,260 ( 0.01%)          if (value >= beta)
+            .                   {
+            .                       {
+      173,776 ( 0.00%)                  return true;
+            .                       };
+            .                   }
+   25,059,142 ( 0.02%)          alpha = alpha > value ? alpha : value;
+            .               }
+    2,483,869 ( 0.00%)      return false;
+    5,141,514 ( 0.00%)  }
+            .           
+            8 ( 0.00%)  Agent::Agent() : b()
+      144,291 ( 0.00%)  => /home/abhilasha/Dev/Programming/C++/StellaGo/src/Board.cpp:Board::Board() (1x)
+            .           {
+            3 ( 0.00%)  }
+            .           
+            .           void Agent::play(uint8_t depth, uint16_t move_limit)
+           10 ( 0.00%)  {
+            1 ( 0.00%)      bool white_pass = false;
+            1 ( 0.00%)      bool black_pass = false;
+          605 ( 0.00%)      for (uint16_t i = 0; i < move_limit; i++)
+            .               {
+       86,900 ( 0.00%)          std::pair<uint16_t, int16_t> best_move = get_best_move(b, depth);
+133,529,079,690 (99.99%)  => src/Agent.cpp:Agent::get_best_move(Board, unsigned char) (100x)
+          300 ( 0.00%)          if (best_move.first == PASS)
+            .                   {
+            .                       printf("PASS\n\n");
+            .                       if (b.whose_turn())
+            .                       {
+            .                           black_pass = true;
+            .                       }
+            .                       else
+            .                       {
+-- line 115 ----------------------------------------
+-- line 119 ----------------------------------------
+            .                       {
+            .                           int16_t score = b.score();
+            .                           std::cout << "GAME OVER: " << ((score > 0) ? "BLACK" : "WHITE") << " wins!" << '\n';
+            .                           printf("Move: %u\tScore: %d\n", i, score);
+            .                           b.print_board();
+            .                           return;
+            .                       }
+            .                   }
+          800 ( 0.00%)          assert(b.make_play(best_move.first));
+      788,807 ( 0.00%)  => /home/abhilasha/Dev/Programming/C++/StellaGo/src/Board.cpp:Board::make_play(unsigned short) (100x)
+        1,000 ( 0.00%)          printf("Move: %u\tScore: %d\n", i, b.score());
+      804,603 ( 0.00%)  => /home/abhilasha/Dev/Programming/C++/StellaGo/src/BoardStates.cpp:Board::score() const (100x)
+      122,268 ( 0.00%)  => ???:0x000000000010c350 (100x)
+          300 ( 0.00%)          b.print_board();
+    8,180,322 ( 0.01%)  => /home/abhilasha/Dev/Programming/C++/StellaGo/src/Board.cpp:Board::print_board() const (100x)
+            .               }
+            2 ( 0.00%)  }
+
+--------------------------------------------------------------------------------
+-- Auto-annotated source: src/BoardStates.cpp
+--------------------------------------------------------------------------------
+Ir                      
+
+-- line 24 ----------------------------------------
+             .           void Board::check_position(uint16_t idx) const
+             .           {
+             .               assert(chain_roots[idx] != 0);
+             .               assert(chain_liberties[chain_roots[idx]] != 0);
+             .               assert(chain_sizes[chain_roots[idx]] != 0);
+             .           }
+             .           
+             .           int16_t Board::score() const
+    25,266,465 ( 0.02%)  {
+     5,053,293 ( 0.00%)      int black_liberties = 0;
+     5,053,293 ( 0.00%)      int white_liberties = 0;
+ 3,431,185,947 ( 2.57%)      for (int i = 0; i < NUM_POINTS; i++)
+             .               {
+13,643,891,100 (10.22%)          if (chain_liberties[i] == 0)
+12,506,900,175 ( 9.37%)  => /usr/include/c++/13/array:std::array<unsigned short, 225ul>::operator[](unsigned long) const (1,136,990,925x)
+             .                   {
+   947,408,360 ( 0.71%)              continue;
+             .                   }
+ 2,274,990,780 ( 1.70%)          if (board[i] == pointType::BLACK)
+ 2,085,408,215 ( 1.56%)  => /usr/include/c++/13/array:std::array<pointType, 225ul>::operator[](unsigned long) const (189,582,565x)
+             .                   {
+ 1,037,962,717 ( 0.78%)              black_liberties += chain_liberties[i];
+ 1,037,962,717 ( 0.78%)  => /usr/include/c++/13/array:std::array<unsigned short, 225ul>::operator[](unsigned long) const (94,360,247x)
+             .                   }
+             .                   else
+             .                   {
+   952,223,180 ( 0.71%)              assert(board[i] == pointType::WHITE);
+ 1,047,445,498 ( 0.78%)  => /usr/include/c++/13/array:std::array<pointType, 225ul>::operator[](unsigned long) const (95,222,318x)
+ 1,047,445,498 ( 0.78%)              white_liberties += chain_liberties[i];
+ 1,047,445,498 ( 0.78%)  => /usr/include/c++/13/array:std::array<unsigned short, 225ul>::operator[](unsigned long) const (95,222,318x)
+             .                   }
+             .               }
+    96,012,567 ( 0.07%)      return int16_t(black_count) - int16_t(white_count) - komi + black_liberties - white_liberties;
+    10,106,586 ( 0.01%)  }
+             .           
+             .           pointType Board::get_point(uint16_t idx) const
+   183,707,265 ( 0.14%)  {
+   183,707,265 ( 0.14%)      return board[idx];
+   288,682,845 ( 0.22%)  => /usr/include/c++/13/array:std::array<pointType, 225ul>::operator[](unsigned long) const (26,243,895x)
+    52,487,790 ( 0.04%)  }
+             .           
+             .           void Board::set_point(uint16_t idx, pointType value)
+   129,447,144 ( 0.10%)  {
+    86,298,096 ( 0.06%)      pointType current_state = board[idx];
+   118,659,882 ( 0.09%)  => /usr/include/c++/13/array:std::array<pointType, 225ul>::operator[](unsigned long) (10,787,262x)
+             .           #if DEBUG
+             .               assert(value != pointType::BLANK);
+             .               assert(current_state != value);
+             .               assert(!(current_state == BLACK && value == WHITE));
+             .               assert(!(current_state == WHITE && value == BLACK));
+             .           #endif
+             .           
+             .               // xor to erase stone
+   183,890,958 ( 0.14%)      zobrist ^= (zobrist_hashes_black[idx]) * (current_state == pointType::BLACK && value == pointType::EMPTY);
+   118,659,882 ( 0.09%)  => /usr/include/c++/13/array:std::array<unsigned long, 225ul>::operator[](unsigned long) (10,787,262x)
+             .           
+   183,597,375 ( 0.14%)      zobrist ^= (zobrist_hashes_white[idx]) * (current_state == pointType::WHITE && value == pointType::EMPTY);
+   118,659,882 ( 0.09%)  => /usr/include/c++/13/array:std::array<unsigned long, 225ul>::operator[](unsigned long) (10,787,262x)
+             .           
+             .               // xor to add stone
+   172,596,192 ( 0.13%)      zobrist ^= (zobrist_hashes_black[idx]) * (value == pointType::BLACK);
+   118,659,882 ( 0.09%)  => /usr/include/c++/13/array:std::array<unsigned long, 225ul>::operator[](unsigned long) (10,787,262x)
+   172,596,192 ( 0.13%)      zobrist ^= (zobrist_hashes_white[idx]) * (value == pointType::WHITE);
+   118,659,882 ( 0.09%)  => /usr/include/c++/13/array:std::array<unsigned long, 225ul>::operator[](unsigned long) (10,787,262x)
+             .           
+    86,298,096 ( 0.06%)      board[idx] = value;
+   118,659,882 ( 0.09%)  => /usr/include/c++/13/array:std::array<pointType, 225ul>::operator[](unsigned long) (10,787,262x)
+             .           
+   138,506,328 ( 0.10%)      switch (current_state)
+             .               {
+             .               case pointType::EMPTY:
+    84,374,296 ( 0.06%)          black_count += (value == pointType::BLACK);
+    84,374,296 ( 0.06%)          white_count += (value == pointType::WHITE);
+    52,733,935 ( 0.04%)          empty_count--;
+    10,546,787 ( 0.01%)          break;
+             .               case pointType::BLACK:
+       845,840 ( 0.00%)          black_count--;
+       845,840 ( 0.00%)          empty_count++;
+       169,168 ( 0.00%)          break;
+             .               case pointType::WHITE:
+       356,535 ( 0.00%)          white_count--;
+       356,535 ( 0.00%)          empty_count++;
+        71,307 ( 0.00%)          break;
+             .               case BLANK:
+             .                   assert(false);
+             .                   break;
+             .           
+             .                   //     default:
+             .                   // #if DEBUG
+             .                   //         assert(false);
+             .                   // #endif
+             .               }
+             .           
+    21,574,524 ( 0.02%)      if (value == pointType::EMPTY)
+             .               {
+       480,950 ( 0.00%)          std::array<int, 4> prev_chains{};
+       240,475 ( 0.00%)          uint16_t prev_chain_count = 0;
+     5,771,400 ( 0.00%)          for (uint16_t i = 0; i < 4; i++)
+             .                   {
+     9,619,000 ( 0.01%)              uint16_t neighbor = idx + directions[i];
+    10,580,900 ( 0.01%)  => /usr/include/c++/13/array:std::array<int, 4ul>::operator[](unsigned long) (961,900x)
+    10,580,900 ( 0.01%)              if (chain_roots[neighbor] != 0)
+    10,580,900 ( 0.01%)  => /usr/include/c++/13/array:std::array<unsigned short, 225ul>::operator[](unsigned long) (961,900x)
+             .                       {
+     5,632,456 ( 0.00%)                  uint16_t chain_id = chain_roots[neighbor];
+     7,744,627 ( 0.01%)  => /usr/include/c++/13/array:std::array<unsigned short, 225ul>::operator[](unsigned long) (704,057x)
+             .           
+       704,057 ( 0.00%)                  bool dupl = false;
+     7,323,529 ( 0.01%)                  for (uint16_t x = 0; x < prev_chain_count; x++)
+             .           
+             .                           {
+     7,544,515 ( 0.01%)                      if (prev_chains[x] == chain_id)
+     7,544,515 ( 0.01%)  => /usr/include/c++/13/array:std::array<int, 4ul>::operator[](unsigned long) (685,865x)
+             .                               {
+        51,991 ( 0.00%)                          dupl = true;
+        51,991 ( 0.00%)                          break;
+             .                               }
+             .                           }
+             .           
+     2,816,228 ( 0.00%)                  if (!dupl)
+             .                           {
+     4,564,462 ( 0.00%)                      prev_chains[prev_chain_count] = chain_id;
+     7,172,726 ( 0.01%)  => /usr/include/c++/13/array:std::array<int, 4ul>::operator[](unsigned long) (652,066x)
+     1,956,198 ( 0.00%)                      prev_chain_count++;
+     5,868,594 ( 0.00%)                      chain_liberties[chain_id]++;
+     7,172,726 ( 0.01%)  => /usr/include/c++/13/array:std::array<unsigned short, 225ul>::operator[](unsigned long) (652,066x)
+             .                           }
+             .                       }
+             .                   }
+             .               }
+    75,510,834 ( 0.06%)  }
+             .           
+             .           nbrs Board::get_nbrs(uint16_t idx) const
+   126,561,444 ( 0.09%)  {
+             .               nbrs n;
+    10,546,787 ( 0.01%)      n.edges = 0;
+    10,546,787 ( 0.01%)      n.liberties = 0;
+    10,546,787 ( 0.01%)      n.black = 0;
+    10,546,787 ( 0.01%)      n.white = 0;
+    10,546,787 ( 0.01%)      uint8_t num_edges = 0;
+    10,546,787 ( 0.01%)      uint8_t num_libs = 0;
+    10,546,787 ( 0.01%)      uint8_t num_black = 0;
+    10,546,787 ( 0.01%)      uint8_t num_white = 0;
+             .           
+   253,122,888 ( 0.19%)      for (uint8_t i = 0; i < 4; i++)
+             .               {
+ 1,028,927,660 ( 0.77%)          switch (board[idx + directions[i]])
+   464,058,628 ( 0.35%)  => /usr/include/c++/13/array:std::array<int, 4ul>::operator[](unsigned long) const (42,187,148x)
+   464,058,628 ( 0.35%)  => /usr/include/c++/13/array:std::array<pointType, 225ul>::operator[](unsigned long) const (42,187,148x)
+             .                   {
+             .                   case pointType::BLANK:
+    13,719,540 ( 0.01%)              num_edges++;
+    36,585,440 ( 0.03%)              n.edges |= uint8_t(1 << i);
+     4,573,180 ( 0.00%)              break;
+             .                   case pointType::EMPTY:
+    75,520,740 ( 0.06%)              num_libs++;
+   201,388,640 ( 0.15%)              n.liberties |= uint8_t(1 << i);
+    25,173,580 ( 0.02%)              break;
+             .                   case pointType::BLACK:
+    17,568,678 ( 0.01%)              num_black++;
+    46,849,808 ( 0.04%)              n.black |= uint8_t(1 << i);
+     5,856,226 ( 0.00%)              break;
+             .                   case pointType::WHITE:
+    19,752,486 ( 0.01%)              num_white++;
+    52,673,296 ( 0.04%)              n.white |= uint8_t(1 << i);
+     6,584,162 ( 0.00%)              break;
+             .                   }
+             .               }
+             .           
+             .           #if DEBUG
+             .               assert((num_edges + num_libs + num_black + num_white) == 4);
+             .           #endif
+             .           
+    52,733,935 ( 0.04%)      n.edges |= uint8_t(num_edges << 4);
+    52,733,935 ( 0.04%)      n.liberties |= uint8_t(num_libs << 4);
+    52,733,935 ( 0.04%)      n.black |= uint8_t(num_black << 4);
+    52,733,935 ( 0.04%)      n.white |= uint8_t(num_white << 4);
+    10,546,787 ( 0.01%)      return n;
+    84,374,296 ( 0.06%)  }
+--------------------------------------------------------------------------------
+-- Auto-annotated source: /usr/include/c++/13/array
+--------------------------------------------------------------------------------
+Ir                      
+
+-- line 192 ----------------------------------------
+             .           
+             .                 [[__nodiscard__, __gnu__::__const__, __gnu__::__always_inline__]]
+             .                 constexpr bool
+             .                 empty() const noexcept { return size() == 0; }
+             .           
+             .                 // Element access.
+             .                 [[__nodiscard__]]
+             .                 _GLIBCXX17_CONSTEXPR reference
+13,766,178,935 (10.31%)        operator[](size_type __n) noexcept
+             .                 {
+             .           	__glibcxx_requires_subscript(__n);
+11,012,943,148 ( 8.25%)  	return _M_elems[__n];
+ 5,506,471,574 ( 4.12%)        }
+             .           
+             .                 [[__nodiscard__]]
+             .                 constexpr const_reference
+ 9,180,783,540 ( 6.87%)        operator[](size_type __n) const noexcept
+             .                 {
+             .           #if __cplusplus >= 201402L
+             .           	__glibcxx_requires_subscript(__n);
+             .           #endif
+ 7,344,626,832 ( 5.50%)  	return _M_elems[__n];
+ 3,672,313,416 ( 2.75%)        }
+             .           
+             .                 _GLIBCXX17_CONSTEXPR reference
+             .                 at(size_type __n)
+             .                 {
+             .           	if (__n >= _Nm)
+             .           	  std::__throw_out_of_range_fmt(__N("array::at: __n (which is %zu) "
+             .           					    ">= _Nm (which is %zu)"),
+             .           					__n, _Nm);
+-- line 222 ----------------------------------------
+
+--------------------------------------------------------------------------------
+Ir                       
+--------------------------------------------------------------------------------
+133,336,985,275 (99.85%)  events annotated
+

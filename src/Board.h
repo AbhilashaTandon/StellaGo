@@ -84,9 +84,10 @@ protected:
     uint64_t black_ko_hash;
     uint64_t white_ko_hash;
 
-    bool is_eye(uint16_t idx);
+    uint8_t is_eye(uint16_t idx) const;
 
     void check_position(uint16_t idx) const;
+    // TODO: add members for black and white liberties
 };
 
 #endif
