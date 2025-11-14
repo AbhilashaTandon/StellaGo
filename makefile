@@ -1,24 +1,8 @@
-# board: src/Board.h src/Board.cpp
-# 	g++ src/Board.cpp -o build/board
-
-
-# Thanks to Job Vranish (https://spin.atomicobject.com/2016/08/26/makefile-c-projects/)
-TARGET_EXEC := stella
-
-BUILD_DIR := ./build
+TARGET := stella
 SRC_DIRS := ./src
-
 # Find all the C and C++ files we want to compile
 # Note the single quotes around the * expressions. The shell will incorrectly expand these otherwise, but we want to send the * directly to the find command.
 SRCS := $(shell find $(SRC_DIRS) -name '*.cpp' -or -name '*.c' -or -name '*.s')
-
-# Prepends BUILD_DIR and appends .o to every src file
-# As an example, ./your_dir/hello.cpp turns into ./build/./your_dir/hello.cpp.o
-OBJS := $(SRCS:%=$(BUILD_DIR)/%.o)
-
-# String substitution (suffix version without %).
-# As an example, ./build/hello.cpp.o turns into ./build/hello.cpp.d
-DEPS := $(OBJS:.o=.d)
 
 # Every folder in ./src will need to be passed to GCC so that it can find header files
 INC_DIRS := $(shell find $(SRC_DIRS) -type d)
@@ -27,57 +11,104 @@ INC_FLAGS := $(addprefix -I,$(INC_DIRS))
 
 # The -MMD and -MP flags together generate Makefiles for us!
 # These files will have .d instead of .o as the output.
-CPPFLAGS := $(INC_FLAGS) -MMD -MP
-COMMON_FLAGS = -std=c++20 -Wall -Wextra 
-run: CXXFLAGS := -O2 $(COMMON_FLAGS) 
+COMMON_FLAGS := $(INC_FLAGS) -MMD -MP -std=c++20 -Wall -Wextra -Werror
+LDFLAGS = -lasan -fsanitize=address -fno-omit-frame-pointer -fwrapv
 
-run: LDFLAGS := -lasan -fsanitize=address
-lint: CXXFLAGS := -O0 $(COMMON_FLAGS) 
-lint: LDFLAGS := -lasan -fsanitize=address 
-debug: CXXFLAGS = -g3 -O0 $(COMMON_FLAGS)
-profile: CXXFLAGS = -O0 -g $(COMMON_FLAGS) -fno-inline
-profile: LDFLAGS = -g
-valgrind: CXXFLAGS := -O2 -g $(COMMON_FLAGS)
+RELEASE_CPP_FLAGS := -O2 $(COMMON_CPP_FLAGS) 
+LINT_CPP_FLAGS := -O0 $(COMMON_FLAGS) 
+DEBUG_CPP_FLAGS := -g3 -O0 $(COMMON_FLAGS) 
+PROFILE_CPP_FLAGS := -g -O0 $(COMMON_FLAGS) -fno-inline
+VALGRIND_CPP_FLAGS := -g -O2 $(COMMON_FLAGS)
+
 valgrind: LDFLAGS = -g
+profile: LDFLAGS = -g
 
-# The final build step.
-$(BUILD_DIR)/$(TARGET_EXEC): $(OBJS)
-	$(CXX) $(OBJS) -o $@ $(LDFLAGS)
+BUILD_DIR := ./build
+RELEASE_DIR = $(BUILD_DIR)/release
+LINT_DIR = $(BUILD_DIR)/lint
+DEBUG_DIR = $(BUILD_DIR)/debug
+PROFILE_DIR = $(BUILD_DIR)/profile
+VALGRIND_DIR = $(BUILD_DIR)/valgrind
 
-# Build step for C source
-$(BUILD_DIR)/%.c.o: %.c
-	mkdir -p $(dir $@)
-	 $(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
-
-# Build step for C++ source
-$(BUILD_DIR)/%.cpp.o: %.cpp
-	mkdir -p $(dir $@)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@ 
-
-.PHONY: clean
+.PHONY: all debug1 debug2 clean whatever...
 clean:
 	rm -r $(BUILD_DIR)
 
-# Include the .d makefiles. The - at the front suppresses the errors of missing
-# Makefiles. Initially, all the .d files will be missing, and we don't want those
-# errors to show up.
--include $(DEPS)
+RELEASE_OBJS := $(SRCS:%=$(RELEASE_DIR)/%.o)
+LINT_OBJS := $(SRCS:%=$(LINT_DIR)/%.o)
+DEBUG_OBJS := $(SRCS:%=$(DEBUG_DIR)/%.o)
+PROFILE_OBJS := $(SRCS:%=$(PROFILE_DIR)/%.o)
+VALGRIND_OBJS := $(SRCS:%=$(VALGRIND_DIR)/%.o)
 
-run: $(BUILD_DIR)/$(TARGET_EXEC)
-	./$(BUILD_DIR)/$(TARGET_EXEC)
+$(info    RELEASE_OBJS is $(RELEASE_OBJS))
+# Commands
 
-lint: clean $(BUILD_DIR)/$(TARGET_EXEC)
-	./$(BUILD_DIR)/$(TARGET_EXEC)
+run: $(RELEASE_DIR)/$(TARGET)
+	./$(RELEASE_DIR)/$(TARGET)
 
-valgrind: clean $(BUILD_DIR)/$(TARGET_EXEC)
-	valgrind --leak-check=full --track-origins=yes -s --log-file="valgrind.txt" $(BUILD_DIR)/$(TARGET_EXEC) > /dev/null
+# The final build step.
+$(RELEASE_DIR)/$(TARGET): $(RELEASE_OBJS)
+	$(CXX) $(RELEASE_OBJS) -o $@ $(LDFLAGS)
 
+# Build step for C++ source
+$(RELEASE_DIR)/%.cpp.o: %.cpp
+	mkdir -p $(BUILD_DIR)
+	mkdir -p $(dir $@)
+	$(CXX) $(RELEASE_CPP_FLAGS) -c $< -o $@
+	
+lint: $(LINT_DIR)/$(TARGET)
+	./$(LINT_DIR)/$(TARGET)
 
-debug: clean $(BUILD_DIR)/$(TARGET_EXEC)
-# 	./$(BUILD_DIR)/$(TARGET_EXEC)
-	gdb $(BUILD_DIR)/$(TARGET_EXEC)
+# The final build step.
+$(LINT_DIR)/$(TARGET): $(LINT_OBJS)
+	$(CXX) $(LINT_OBJS) -o $@ $(LDFLAGS)
 
-profile: clean $(BUILD_DIR)/$(TARGET_EXEC)
-	./$(BUILD_DIR)/$(TARGET_EXEC)
-	valgrind --tool=callgrind --callgrind-out-file=callgrind.txt ./$(BUILD_DIR)/$(TARGET_EXEC)
+# Build step for C++ source
+$(LINT_DIR)/%.cpp.o: %.cpp
+	mkdir -p $(BUILD_DIR)
+	mkdir -p $(dir $@)
+	$(CXX) $(LINT_CPP_FLAGS) -c $< -o $@   
+
+debug: $(DEBUG_DIR)/$(TARGET)
+	gdb $(DEBUG_DIR)/$(TARGET)
+
+# The final build step.
+$(DEBUG_DIR)/$(TARGET): $(DEBUG_OBJS)
+	$(CXX) $(DEBUG_OBJS) -o $@ $(LDFLAGS)
+
+# Build step for C++ source
+$(DEBUG_DIR)/%.cpp.o: %.cpp
+	mkdir -p $(BUILD_DIR)
+	mkdir -p $(dir $@)
+	$(CXX) $(DEBUG_CPP_FLAGS) -c $< -o $@
+
+profile: $(PROFILE_DIR)/$(TARGET)
+	./$(PROFILE_DIR)/$(TARGET)
+	valgrind --tool=callgrind --callgrind-out-file=callgrind.txt ./$(PROFILE_DIR)/$(TARGET)
 	callgrind_annotate callgrind.txt > callgrind_profile.txt
+
+# The final build step.
+$(PROFILE_DIR)/$(TARGET): $(PROFILE_OBJS)
+	$(CXX) $(PROFILE_OBJS) -o $@ $(LDFLAGS)
+
+# Build step for C++ source
+$(PROFILE_DIR)/%.cpp.o: %.cpp
+	mkdir -p $(BUILD_DIR)
+	mkdir -p $(dir $@)
+	$(CXX) $(PROFILE_CPP_FLAGS) -c $< -o $@
+
+valgrind: $(VALGRIND_DIR)/$(TARGET)
+	valgrind --leak-check=full --track-origins=yes -s --log-file="valgrind.txt" $(VALGRIND_DIR)/$(TARGET) > /dev/null
+
+# The final build step.
+$(VALGRIND_DIR)/$(TARGET): $(VALGRIND_DIR)
+	$(CXX) $(VALGRIND_OBJS) -o $@ $(LDFLAGS)
+
+# Build step for C++ source
+$(VALGRIND_DIR)/%.cpp.o: %.cpp
+	mkdir -p $(BUILD_DIR)
+	mkdir -p $(dir $@)
+	$(CXX) $(VALGRIND_CPP_FLAGS) -c $< -o $@
+
+
+
