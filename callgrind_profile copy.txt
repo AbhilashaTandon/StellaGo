@@ -28,14 +28,14 @@ Ir                       file:function
 14,699,157,693 (11.01%)  /usr/include/c++/13/array:std::array<unsigned short, 225ul>::operator[](unsigned long) const [/home/abhilasha/Dev/Programming/C++/StellaGo/build/stella]
 14,339,637,510 (10.74%)  /usr/include/c++/13/array:std::array<unsigned short, 225ul>::operator[](unsigned long) [/home/abhilasha/Dev/Programming/C++/StellaGo/build/stella]
  8,982,147,922 ( 6.73%)  /usr/include/c++/13/array:std::array<int, 4ul>::operator[](unsigned long) [/home/abhilasha/Dev/Programming/C++/StellaGo/build/stella]
- 5,496,451,673 ( 4.12%)  src/Agent.cpp:Agent::alphabeta(Board, unsigned char, short, short)'2 [/home/abhilasha/Dev/Programming/C++/StellaGo/build/stella]
+ 5,496,451,673 ( 4.12%)  src/Bot.cpp:Bot::alphabeta(Board, unsigned char, short, short)'2 [/home/abhilasha/Dev/Programming/C++/StellaGo/build/stella]
  4,866,265,020 ( 3.64%)  src/BoardGameplay.cpp:Board::check_play(unsigned short) const [/home/abhilasha/Dev/Programming/C++/StellaGo/build/stella]
  4,781,025,315 ( 3.58%)  /usr/include/c++/13/array:std::array<pointType, 225ul>::operator[](unsigned long) [/home/abhilasha/Dev/Programming/C++/StellaGo/build/stella]
  4,307,048,394 ( 3.23%)  /usr/include/c++/13/array:std::array<pointType, 225ul>::operator[](unsigned long) const [/home/abhilasha/Dev/Programming/C++/StellaGo/build/stella]
  2,565,474,390 ( 1.92%)  src/BoardChainManagement.cpp:Board::update_chains(unsigned short) [/home/abhilasha/Dev/Programming/C++/StellaGo/build/stella]
- 2,443,527,051 ( 1.83%)  src/Agent.cpp:Agent::evaluate_move_white(Board, int, unsigned char, short, short&, short&, unsigned short&)'2 [/home/abhilasha/Dev/Programming/C++/StellaGo/build/stella]
+ 2,443,527,051 ( 1.83%)  src/Bot.cpp:Bot::evaluate_move_white(Board, int, unsigned char, short, short&, short&, unsigned short&)'2 [/home/abhilasha/Dev/Programming/C++/StellaGo/build/stella]
  2,305,088,887 ( 1.73%)  src/BoardStates.cpp:Board::get_nbrs(unsigned short) const [/home/abhilasha/Dev/Programming/C++/StellaGo/build/stella]
- 2,217,349,916 ( 1.66%)  src/Agent.cpp:Agent::evaluate_move_black(Board, int, unsigned char, short&, short, short&, unsigned short&)'2 [/home/abhilasha/Dev/Programming/C++/StellaGo/build/stella]
+ 2,217,349,916 ( 1.66%)  src/Bot.cpp:Bot::evaluate_move_black(Board, int, unsigned char, short&, short, short&, unsigned short&)'2 [/home/abhilasha/Dev/Programming/C++/StellaGo/build/stella]
  1,708,138,432 ( 1.28%)  /usr/include/c++/13/array:std::array<unsigned short, 4ul>::operator[](unsigned long) [/home/abhilasha/Dev/Programming/C++/StellaGo/build/stella]
  1,548,197,024 ( 1.16%)  src/BoardStates.cpp:Board::set_point(unsigned short, pointType) [/home/abhilasha/Dev/Programming/C++/StellaGo/build/stella]
  1,229,881,288 ( 0.92%)  src/BoardChainManagement.cpp:Board::extend_chain(unsigned short, unsigned short) [/home/abhilasha/Dev/Programming/C++/StellaGo/build/stella]
@@ -694,27 +694,27 @@ Ir
       151,139 ( 0.00%)      return true;
    27,128,380 ( 0.02%)  }
 --------------------------------------------------------------------------------
--- Auto-annotated source: src/Agent.cpp
+-- Auto-annotated source: src/Bot.cpp
 --------------------------------------------------------------------------------
 Ir                     
 
-            .           #include "Agent.h"
+            .           #include "Bot.h"
             .           #include "Config.h"
             .           #include <iostream>
             .           
             .           #define MIN_SCORE -32768
             .           #define MAX_SCORE 32767
             .           
-            .           std::pair<uint16_t, int16_t> Agent::get_best_move(Board b, uint8_t depth)
+            .           std::pair<uint16_t, int16_t> Bot::get_best_move(Board b, uint8_t depth)
         1,000 ( 0.00%)  {
             .               // todo: make hash table for best moves
           200 ( 0.00%)      assert(depth > 0);
        87,100 ( 0.00%)      std::pair<uint16_t, int16_t> results = alphabeta(Board(b), depth, MIN_SCORE, MAX_SCORE);
-133,528,990,790 (99.99%)  => src/Agent.cpp:Agent::alphabeta(Board, unsigned char, short, short) (100x)
+133,528,990,790 (99.99%)  => src/Bot.cpp:Bot::alphabeta(Board, unsigned char, short, short) (100x)
           100 ( 0.00%)      return results;
           500 ( 0.00%)  }
             .           
-            .           std::pair<uint16_t, int16_t> Agent::alphabeta(Board b, uint8_t depth, int16_t alpha, int16_t beta)
+            .           std::pair<uint16_t, int16_t> Bot::alphabeta(Board b, uint8_t depth, int16_t alpha, int16_t beta)
    79,083,750 ( 0.06%)  {
    10,544,500 ( 0.01%)      if (depth < 1)
             .               {
@@ -737,7 +737,7 @@ Ir
       128,052 ( 0.00%)  => /home/abhilasha/Dev/Programming/C++/StellaGo/src/Board.cpp:Board::whose_turn() const (10,671x)
             .                       {
 2,257,124,646 ( 1.69%)                  if (evaluate_move_black(b, i, depth, alpha, beta, value, best_move))
-55,499,023,296 (41.56%)  => src/Agent.cpp:Agent::evaluate_move_black(Board, int, unsigned char, short&, short, short&, unsigned short&) (5,354x)
+55,499,023,296 (41.56%)  => src/Bot.cpp:Bot::evaluate_move_black(Board, int, unsigned char, short&, short, short&, unsigned short&) (5,354x)
             .                           {
        86,888 ( 0.00%)                      break;
             .                           }
@@ -745,7 +745,7 @@ Ir
             .                       else
             .                       {
 2,506,531,082 ( 1.88%)                  if (evaluate_move_white(b, i, depth, alpha, beta, value, best_move))
-78,018,324,470 (58.42%)  => src/Agent.cpp:Agent::evaluate_move_white(Board, int, unsigned char, short, short&, short&, unsigned short&) (5,317x)
+78,018,324,470 (58.42%)  => src/Bot.cpp:Bot::evaluate_move_white(Board, int, unsigned char, short, short&, short&, unsigned short&) (5,317x)
             .                           {
       103,658 ( 0.00%)                      break;
             .                           }
@@ -757,13 +757,13 @@ Ir
         3,600 ( 0.00%)  => /usr/include/c++/13/bits/stl_pair.h:std::pair<unsigned short, short>::pair<unsigned short&, short&>(unsigned short&, short&) (100x)
    42,178,000 ( 0.03%)  }
             .           
-            .           bool Agent::evaluate_move_white(Board b, int i, uint8_t depth, int16_t alpha, int16_t &beta, int16_t &value, uint16_t &best_move)
+            .           bool Bot::evaluate_move_white(Board b, int i, uint8_t depth, int16_t alpha, int16_t &beta, int16_t &value, uint16_t &best_move)
    31,403,009 ( 0.02%)  {
    19,983,733 ( 0.01%)      if (b.make_play(i))
 1,609,673,072 ( 1.21%)  => /home/abhilasha/Dev/Programming/C++/StellaGo/src/Board.cpp:Board::make_play(unsigned short) (101,912x)
             .               {
 2,412,920,795 ( 1.81%)          std::pair<uint16_t, int16_t> look_ahead = alphabeta(b, depth - 1, alpha, beta);
-131,647,010,887 (98.58%)  => src/Agent.cpp:Agent::alphabeta(Board, unsigned char, short, short)'2 (99,995x)
+131,647,010,887 (98.58%)  => src/Bot.cpp:Bot::alphabeta(Board, unsigned char, short, short)'2 (99,995x)
     5,502,670 ( 0.00%)          int score =
     2,751,335 ( 0.00%)              look_ahead.second;
    13,756,675 ( 0.01%)          if (score < value)
@@ -782,13 +782,13 @@ Ir
     2,751,161 ( 0.00%)      return false;
     5,709,638 ( 0.00%)  }
             .           
-            .           bool Agent::evaluate_move_black(Board b, int i, uint8_t depth, int16_t &alpha, int16_t beta, int16_t &value, uint16_t &best_move)
+            .           bool Bot::evaluate_move_black(Board b, int i, uint8_t depth, int16_t &alpha, int16_t beta, int16_t &value, uint16_t &best_move)
    33,419,841 ( 0.03%)  {
    17,995,299 ( 0.01%)      if (b.make_play(i))
 1,727,419,263 ( 1.29%)  => /home/abhilasha/Dev/Programming/C++/StellaGo/src/Board.cpp:Board::make_play(unsigned short) (122,439x)
             .               {
 2,210,754,755 ( 1.66%)          std::pair<uint16_t, int16_t> look_ahead = alphabeta(b, depth - 1, alpha, beta);
-131,483,033,160 (98.46%)  => src/Agent.cpp:Agent::alphabeta(Board, unsigned char, short, short)'2 (118,962x)
+131,483,033,160 (98.46%)  => src/Bot.cpp:Bot::alphabeta(Board, unsigned char, short, short)'2 (118,962x)
     5,041,630 ( 0.00%)          int score =
     2,520,815 ( 0.00%)              look_ahead.second;
    12,604,075 ( 0.01%)          if (score > value)
@@ -807,19 +807,19 @@ Ir
     2,483,869 ( 0.00%)      return false;
     5,141,514 ( 0.00%)  }
             .           
-            8 ( 0.00%)  Agent::Agent() : b()
+            8 ( 0.00%)  Bot::Bot() : b()
       144,291 ( 0.00%)  => /home/abhilasha/Dev/Programming/C++/StellaGo/src/Board.cpp:Board::Board() (1x)
             .           {
             3 ( 0.00%)  }
             .           
-            .           void Agent::play(uint8_t depth, uint16_t move_limit)
+            .           void Bot::play(uint8_t depth, uint16_t move_limit)
            10 ( 0.00%)  {
             1 ( 0.00%)      bool white_pass = false;
             1 ( 0.00%)      bool black_pass = false;
           605 ( 0.00%)      for (uint16_t i = 0; i < move_limit; i++)
             .               {
        86,900 ( 0.00%)          std::pair<uint16_t, int16_t> best_move = get_best_move(b, depth);
-133,529,079,690 (99.99%)  => src/Agent.cpp:Agent::get_best_move(Board, unsigned char) (100x)
+133,529,079,690 (99.99%)  => src/Bot.cpp:Bot::get_best_move(Board, unsigned char) (100x)
           300 ( 0.00%)          if (best_move.first == PASS)
             .                   {
             .                       printf("PASS\n\n");

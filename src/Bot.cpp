@@ -5,7 +5,7 @@
 #define MIN_SCORE -32768
 #define MAX_SCORE 32767
 
-std::pair<uint16_t, int16_t> Agent::get_best_play(uint8_t depth)
+std::pair<uint16_t, int16_t> Bot::get_best_play(uint8_t depth)
 {
     // todo: make hash table for best plays
     assert(depth > 0);
@@ -13,7 +13,7 @@ std::pair<uint16_t, int16_t> Agent::get_best_play(uint8_t depth)
     return results;
 }
 
-std::pair<uint16_t, int16_t> Agent::alphabeta(Board b, uint8_t depth, int16_t alpha, int16_t beta)
+std::pair<uint16_t, int16_t> Bot::alphabeta(Board b, uint8_t depth, int16_t alpha, int16_t beta)
 {
     if (depth < 1)
     {
@@ -47,7 +47,7 @@ std::pair<uint16_t, int16_t> Agent::alphabeta(Board b, uint8_t depth, int16_t al
     return std::pair<uint16_t, int16_t>(best_play, value);
 }
 
-bool Agent::evaluate_play_white(Board b, int i, uint8_t depth, int16_t alpha, int16_t &beta, int16_t &value, uint16_t &best_play)
+bool Bot::evaluate_play_white(Board b, int i, uint8_t depth, int16_t alpha, int16_t &beta, int16_t &value, uint16_t &best_play)
 {
     if (b.make_play(i))
     {
@@ -70,7 +70,7 @@ bool Agent::evaluate_play_white(Board b, int i, uint8_t depth, int16_t alpha, in
     return false;
 }
 
-bool Agent::evaluate_play_black(Board b, int i, uint8_t depth, int16_t &alpha, int16_t beta, int16_t &value, uint16_t &best_play)
+bool Bot::evaluate_play_black(Board b, int i, uint8_t depth, int16_t &alpha, int16_t beta, int16_t &value, uint16_t &best_play)
 {
     if (b.make_play(i))
     {
@@ -93,11 +93,11 @@ bool Agent::evaluate_play_black(Board b, int i, uint8_t depth, int16_t &alpha, i
     return false;
 }
 
-Agent::Agent() : b()
+Bot::Bot() : b()
 {
 }
 
-void Agent::play(uint8_t depth, uint16_t play_limit)
+void Bot::play(uint8_t depth, uint16_t play_limit)
 {
     bool white_pass = false;
     bool black_pass = false;
@@ -130,12 +130,13 @@ void Agent::play(uint8_t depth, uint16_t play_limit)
     }
 }
 
-bool Agent::make_play(int i)
+bool Bot::make_play(int i)
 {
     return b.make_play(i);
 }
 
-void Agent::play_best_play(uint8_t depth)
+bool Bot::make_best_play(uint8_t depth)
 {
-    std
+    auto best_play = get_best_play(depth);
+    return b.make_play(best_play.first);
 }

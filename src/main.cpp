@@ -57,6 +57,6 @@ int main(int argc, char *argv[])
     std::cout << "Board size " << board_size << " side " << side_to_play << "\n\n";
 }
 // {
-//     Agent a = Agent();
+//     Bot a = Bot();
 //     a.play(3, 100);
 // }
