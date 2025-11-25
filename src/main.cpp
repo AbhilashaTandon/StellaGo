@@ -5,7 +5,7 @@
 #include <iostream>
 #include <string>
 #include "Bot.h"
-#include "SGFFile.h"
+#include "SGFReader.h"
 
 int main(int argc, char *argv[])
 {

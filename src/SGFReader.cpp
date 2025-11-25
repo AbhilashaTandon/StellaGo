@@ -1,5 +1,5 @@
 /* Looks through all the SGF files and finds the average move number where each square of the board is occupied. The starpoints will be first */
-#include "SGFFile.h"
+#include "SGFReader.h"
 
 void search_files()
 {
@@ -17,7 +17,7 @@ void search_files()
             else
             {
                 // std::cout << sgf_file.path() << std::endl;
-                SGFFile file = SGFFile(sgf_file.path());
+                SGFReader file = SGFReader(sgf_file.path());
                 file.record_moves(move_count_sums);
                 // break;
             }
@@ -36,7 +36,7 @@ void search_files()
     }
 }
 
-void SGFFile::record_moves(std::array<std::pair<int, int>, 441> &move_count_sums)
+void SGFReader::record_moves(std::array<std::pair<int, int>, 441> &move_count_sums)
 {
 
     std::ifstream ifs;
@@ -82,6 +82,6 @@ void SGFFile::record_moves(std::array<std::pair<int, int>, 441> &move_count_sums
     } while (std::getline(ifs, line));
 }
 
-SGFFile::SGFFile(std::string file_path) : file_path(file_path)
+SGFReader::SGFReader(std::string file_path) : file_path(file_path)
 {
 }

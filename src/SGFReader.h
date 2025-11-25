@@ -9,10 +9,10 @@
 #include <array>
 #include <vector>
 
-class SGFFile
+class SGFReader
 {
 public:
-    SGFFile(std::string file_path);
+    SGFReader(std::string file_path);
 
     void record_moves(std::array<std::pair<int, int>, 441> &move_count_sums);
 
