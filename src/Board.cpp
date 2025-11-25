@@ -184,7 +184,7 @@ bool Board::make_play(uint16_t idx)
         play_count++;
         return true;
     }
-    bool color_to_move = whose_turn();
+    bool color_to_play = whose_turn();
 
 #if DEBUG
     assert(chain_roots[idx] == 0);
@@ -194,9 +194,9 @@ bool Board::make_play(uint16_t idx)
     {
         // print_board();
         update_chains(idx);
-        set_point(idx, color_to_move ? pointType::BLACK : pointType::WHITE);
+        set_point(idx, color_to_play ? pointType::BLACK : pointType::WHITE);
         play_count++;
-        if (color_to_move)
+        if (color_to_play)
         {
             black_ko_hash = get_hash();
         }
