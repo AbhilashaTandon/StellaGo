@@ -17,6 +17,7 @@ COMMON_FLAGS := -std=c++20 -Wall -Wextra -Werror -lasan -fsanitize=address -fno-
 LDFLAGS = -lasan -fsanitize=address -fno-omit-frame-pointer -fwrapv
 
 run: CXXFLAGS := -O2 $(COMMON_FLAGS) 
+compile: CXXFLAGS := -O2 $(COMMON_FLAGS) 
 lint: CXXFLAGS := -O0 $(COMMON_FLAGS) 
 debug: CXXFLAGS := -g3 -O0 $(COMMON_FLAGS) 
 profile: CXXFLAGS := -g -O0 $(COMMON_FLAGS) 
@@ -54,6 +55,8 @@ VALGRIND_OBJS := $(SRCS:%=$(VALGRIND_DIR)/%.o)
 
 run: $(RELEASE_DIR)/$(TARGET)
 	./$(RELEASE_DIR)/$(TARGET) $(TARGET_FLAGS)
+
+compile: $(RELEASE_DIR)/$(TARGET) 
 
 # The final build step.
 $(RELEASE_DIR)/$(TARGET): $(RELEASE_OBJS)
