@@ -45,23 +45,12 @@ Board::Board()
     play_count = 0;
     black_ko_hash = 0;
     white_ko_hash = 0;
-}
-
-uint16_t Board::get_liberties(uint16_t idx) const
-{
-    uint16_t num_liberties = 0;
-    for (uint16_t i = 0; i < 4; i++)
-    {
-        if (board[idx + directions[i]] == pointType::EMPTY)
-        {
-            num_liberties++;
-        }
-    }
-    return num_liberties;
+    game_result = EMPTY;
 }
 
 void Board::print_board() const
 {
+    // TODO: put last move in parentheses to make it easier to track what's going on
     for (uint16_t i = 0; i < (BOARD_SIZE + 2); i++)
     {
         for (uint16_t j = 0; j < (BOARD_SIZE + 2); j++)
@@ -177,50 +166,6 @@ uint64_t Board::get_hash() const
     return zobrist;
 }
 
-bool Board::make_play(uint16_t idx)
-{
-    if (idx == PASS)
-    {
-        play_count++;
-        return true;
-    }
-    bool color_to_play = whose_turn();
-
-#if DEBUG
-    assert(chain_roots[idx] == 0);
-#endif
-
-    if (check_play(idx))
-    {
-        // print_board();
-        update_chains(idx);
-        set_point(idx, color_to_play ? pointType::BLACK : pointType::WHITE);
-        play_count++;
-        if (color_to_play)
-        {
-            black_ko_hash = get_hash();
-        }
-        else
-        {
-            white_ko_hash = get_hash();
-        }
-#if DEBUG
-
-        check_for_errors();
-#endif
-#if VERBOSE
-        print_board();
-#endif
-        return true;
-    }
-    return false;
-}
-
-bool Board::whose_turn() const
-{
-    return (play_count & 1) == 0;
-}
-
 uint16_t Board::get_play_count() const
 {
     return play_count;
@@ -296,4 +241,62 @@ void Board::check_for_errors() const
             assert(false);
         }
     }
+}
+
+uint16_t Board::coords_to_idx(uint16_t x, uint16_t y) const
+{
+#if DEBUG
+    assert(x >= 0 && x < BOARD_SIZE);
+    assert(y >= 0 && y < BOARD_SIZE);
+#endif
+    return (BOARD_SIZE + 2) * (y + 1) + x + 1;
+}
+std::pair<int, int> Board::idx_to_coords(uint16_t idx) const
+{
+#if DEBUG
+    assert(idx >= 0 && (unsigned int)idx < board.size());
+#endif
+    return std::pair<int, int>(idx / (BOARD_SIZE + 2) - 1, idx % (BOARD_SIZE + 2) - 1);
+}
+
+uint8_t Board::is_eye(uint16_t idx) const
+{
+    if (board[idx] != EMPTY)
+    {
+        return false;
+    }
+    nbrs n = get_nbrs(idx);
+    uint8_t color = 0;
+    if ((((n.black & COUNT) >> 4) + ((n.edges & COUNT) >> 4)) == 4)
+    {
+        color = BLACK;
+    }
+    else if ((((n.white & COUNT) >> 4) + ((n.edges & COUNT) >> 4)) == 4)
+    {
+        color = WHITE;
+    }
+    else
+    {
+        // std::printf("lacks direct neighbors %d %d %d\n", n.edges & COUNT, n.black, n.white);
+        return 0;
+    }
+
+    // check for at least 2 diagonals
+
+    int num_diagonals = 0;
+    for (int i = 0; i < 4; i++)
+    {
+        if (board[idx + diagonals[i]] == color || board[idx + diagonals[i]] == BLANK)
+        {
+            num_diagonals++;
+        }
+        if (num_diagonals >= 2)
+        {
+            // this includes false eyes
+            return color;
+        }
+    }
+
+    // std::cout << "lacks diagonal neighbors";
+    return 0;
 }

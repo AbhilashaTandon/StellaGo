@@ -2,66 +2,9 @@
 #include <iostream>
 #include <random>
 #include <cmath>
+#include <queue>
 
 #include "Board.h"
-
-uint16_t Board::coords_to_idx(uint16_t x, uint16_t y) const
-{
-#if DEBUG
-    assert(x >= 0 && x < BOARD_SIZE);
-    assert(y >= 0 && y < BOARD_SIZE);
-#endif
-    return (BOARD_SIZE + 2) * (y + 1) + x + 1;
-}
-std::pair<int, int> Board::idx_to_coords(uint16_t idx) const
-{
-#if DEBUG
-    assert(idx >= 0 && (unsigned int)idx < board.size());
-#endif
-    return std::pair<int, int>(idx / (BOARD_SIZE + 2) - 1, idx % (BOARD_SIZE + 2) - 1);
-}
-
-uint8_t Board::is_eye(uint16_t idx) const
-{
-    if (board[idx] != EMPTY)
-    {
-        return false;
-    }
-    nbrs n = get_nbrs(idx);
-    uint8_t color = 0;
-    if ((((n.black & COUNT) >> 4) + ((n.edges & COUNT) >> 4)) == 4)
-    {
-        color = BLACK;
-    }
-    else if ((((n.white & COUNT) >> 4) + ((n.edges & COUNT) >> 4)) == 4)
-    {
-        color = WHITE;
-    }
-    else
-    {
-        // std::printf("lacks direct neighbors %d %d %d\n", n.edges & COUNT, n.black, n.white);
-        return 0;
-    }
-
-    // check for at least 2 diagonals
-
-    int num_diagonals = 0;
-    for (int i = 0; i < 4; i++)
-    {
-        if (board[idx + diagonals[i]] == color || board[idx + diagonals[i]] == BLANK)
-        {
-            num_diagonals++;
-        }
-        if (num_diagonals >= 2)
-        {
-            // this includes false eyes
-            return color;
-        }
-    }
-
-    // std::cout << "lacks diagonal neighbors";
-    return 0;
-}
 
 void Board::check_position(uint16_t idx) const
 {
@@ -138,6 +81,48 @@ int16_t Board::score() const
     }
 
     return -komi + black_liberties - white_liberties + (black_chain_score >> 3) - (white_chain_score >> 3) + black_eyes * 3 - white_eyes * 3;
+}
+
+int Board::floodfill(pointType side) const
+{
+    uint16_t area_count = 0;
+    std::array<bool, NUM_POINTS> visited{};
+    std::queue<int> stones_to_check{};
+
+    for (int i = 0; i < NUM_POINTS; i++)
+    {
+        if (board[i] != side)
+        {
+            continue;
+        }
+
+        stones_to_check.push(i);
+        visited[i] = true;
+        area_count++;
+    }
+
+    while (!stones_to_check.empty())
+    {
+        int starting_point = stones_to_check.front();
+        stones_to_check.pop();
+        for (int d = 0; d < 4; d++)
+        {
+            int neighbor = starting_point + directions[d];
+            if (!visited[neighbor])
+            {
+                visited[neighbor] = true;
+                stones_to_check.push(neighbor);
+                area_count++;
+            }
+        }
+    }
+
+    return area_count;
+}
+
+float Board::area_score() const
+{
+    return ((float)floodfill(BLACK) - (float)floodfill(WHITE) - komi);
 }
 
 pointType Board::get_point(uint16_t idx) const
@@ -269,4 +254,17 @@ nbrs Board::get_nbrs(uint16_t idx) const
     n.black |= uint8_t(num_black << 4);
     n.white |= uint8_t(num_white << 4);
     return n;
+}
+
+uint16_t Board::get_liberties(uint16_t idx) const
+{
+    uint16_t num_liberties = 0;
+    for (uint16_t i = 0; i < 4; i++)
+    {
+        if (board[idx + directions[i]] == pointType::EMPTY)
+        {
+            num_liberties++;
+        }
+    }
+    return num_liberties;
 }

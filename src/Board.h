@@ -36,6 +36,7 @@ public:
     Board();
 
     bool make_play(uint16_t idx);
+    bool pass_play(bool color_to_play);
     bool whose_turn() const;
     uint16_t get_play_count() const;
     void print_board() const;
@@ -45,6 +46,8 @@ public:
     std::array<int, 4> directions;
     std::array<int, 4> diagonals;
     int16_t score() const;
+    float area_score() const;
+    pointType get_game_result() const;
 
 protected:
     std::array<pointType, NUM_POINTS> board{};
@@ -89,7 +92,17 @@ protected:
     uint8_t is_eye(uint16_t idx) const;
 
     void check_position(uint16_t idx) const;
-    // TODO: add members for black and white liberties
+
+    bool no_legal_moves() const;
+
+    pointType game_result; // empty if ongoing game, black if black wins, white if white wins
+    bool black_passed;     // if last move was black passing their turn
+    bool white_passed;     // if last move was white passing their turn
+    int floodfill(pointType side) const;
+
+    void evaluate_game();
+
+    // TODO: add members for black and white liberty counts
 };
 
 #endif

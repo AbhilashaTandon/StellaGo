@@ -135,8 +135,14 @@ bool Bot::make_play(int i)
     return b.make_play(i);
 }
 
-bool Bot::make_best_play(uint8_t depth)
+int Bot::make_best_play(uint8_t depth)
 {
     auto best_play = get_best_play(depth);
-    return b.make_play(best_play.first);
+    b.make_play(best_play.first);
+    return best_play.first;
+}
+
+pointType Bot::get_game_result() const
+{
+    return b.get_game_result();
 }
