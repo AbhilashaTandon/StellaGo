@@ -1,5 +1,6 @@
 TARGET := stella
 SRC_DIRS := ./src
+TARGET_FLAGS := 19 b 
 # Find all the C and C++ files we want to compile
 # Note the single quotes around the * expressions. The shell will incorrectly expand these otherwise, but we want to send the * directly to the find command.
 SRCS := $(shell find $(SRC_DIRS) -name '*.cpp' -or -name '*.c' -or -name '*.s')
@@ -52,7 +53,7 @@ VALGRIND_OBJS := $(SRCS:%=$(VALGRIND_DIR)/%.o)
 # Commands
 
 run: $(RELEASE_DIR)/$(TARGET)
-	./$(RELEASE_DIR)/$(TARGET)
+	./$(RELEASE_DIR)/$(TARGET) $(TARGET_FLAGS)
 
 # The final build step.
 $(RELEASE_DIR)/$(TARGET): $(RELEASE_OBJS)
@@ -65,7 +66,7 @@ $(RELEASE_DIR)/%.cpp.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 	
 lint: $(LINT_DIR)/$(TARGET)
-	./$(LINT_DIR)/$(TARGET)
+	./$(LINT_DIR)/$(TARGET) $(TARGET_FLAGS)
 
 # The final build step.
 $(LINT_DIR)/$(TARGET): $(LINT_OBJS) 
@@ -78,7 +79,7 @@ $(LINT_DIR)/%.cpp.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@   
 
 debug: $(DEBUG_DIR)/$(TARGET)
-	gdb $(DEBUG_DIR)/$(TARGET)
+	gdb $(DEBUG_DIR)/$(TARGET) $(TARGET_FLAGS)
 
 # The final build step.
 $(DEBUG_DIR)/$(TARGET): $(DEBUG_OBJS) 
@@ -91,8 +92,8 @@ $(DEBUG_DIR)/%.cpp.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 profile: $(PROFILE_DIR)/$(TARGET) 
-	./$(PROFILE_DIR)/$(TARGET)
-	valgrind --tool=callgrind --callgrind-out-file=callgrind.txt ./$(PROFILE_DIR)/$(TARGET)
+	./$(PROFILE_DIR)/$(TARGET) $(TARGET_FLAGS)
+	valgrind --tool=callgrind --callgrind-out-file=callgrind.txt ./$(PROFILE_DIR)/$(TARGET) $(TARGET_FLAGS)
 	callgrind_annotate callgrind.txt > callgrind_profile.txt
 
 # The final build step.
@@ -106,7 +107,7 @@ $(PROFILE_DIR)/%.cpp.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 valgrind: $(VALGRIND_DIR)/$(TARGET)
-	valgrind --leak-check=full --track-origins=yes -s --log-file="valgrind.txt" $(VALGRIND_DIR)/$(TARGET) > /dev/null
+	valgrind --leak-check=full --track-origins=yes -s --log-file="valgrind.txt" $(VALGRIND_DIR)/$(TARGET) $(TARGET_FLAGS) > /dev/null
 
 # The final build step.
 $(VALGRIND_DIR)/$(TARGET): $(VALGRIND_OBJS) 
