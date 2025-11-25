@@ -66,7 +66,7 @@ uint8_t Board::is_eye(uint16_t idx) const
 void Board::check_position(uint16_t idx) const
 {
     assert(chain_roots[idx] != 0);
-    assert(chain_liberties[chain_roots[idx]] != 0);
+    assert(chain_liberty_counts[chain_roots[idx]] != 0);
     assert(chain_sizes[chain_roots[idx]] != 0);
 }
 
@@ -80,7 +80,7 @@ int16_t Board::score() const
 
     for (int i = 0; i < NUM_POINTS; i++)
     {
-        int libs = chain_liberties[i];
+        int libs = chain_liberty_counts[i];
         switch (is_eye(i))
         {
         case BLACK:
@@ -97,7 +97,7 @@ int16_t Board::score() const
         }
         if (board[i] == pointType::BLACK)
         {
-            black_liberties += chain_liberties[i];
+            black_liberties += chain_liberty_counts[i];
             if (libs < 3)
             {
                 black_liberties -= chain_sizes[i];
@@ -106,7 +106,7 @@ int16_t Board::score() const
         else
         {
             assert(board[i] == pointType::WHITE);
-            white_liberties += chain_liberties[i];
+            white_liberties += chain_liberty_counts[i];
             if (libs < 3)
             {
                 white_liberties -= chain_sizes[i];
@@ -217,7 +217,8 @@ void Board::set_point(uint16_t idx, pointType value)
                 {
                     prev_chains[prev_chain_count] = chain_id;
                     prev_chain_count++;
-                    chain_liberties[chain_id]++;
+                    chain_liberty_locations[chain_id][neighbor] = true;
+                    chain_liberty_counts[chain_id]++;
                 }
             }
         }

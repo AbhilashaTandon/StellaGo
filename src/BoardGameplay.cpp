@@ -63,7 +63,7 @@ bool Board::is_suicide(uint16_t idx) const
             if (color_to_move)
             {
                 // same color chain
-                if (chain_liberties[chain_id] > 1)
+                if (chain_liberty_counts[chain_id] > 1)
                 {
                     return false;
                 }
@@ -71,7 +71,7 @@ bool Board::is_suicide(uint16_t idx) const
             else
             // diff color chain
             {
-                if (chain_liberties[chain_id] < 2)
+                if (chain_liberty_counts[chain_id] < 2)
                 {
                     return false;
                 }
@@ -81,7 +81,7 @@ bool Board::is_suicide(uint16_t idx) const
             if (!color_to_move)
             {
                 // same color chain
-                if (chain_liberties[chain_id] > 1)
+                if (chain_liberty_counts[chain_id] > 1)
                 {
                     return false;
                 }
@@ -89,7 +89,7 @@ bool Board::is_suicide(uint16_t idx) const
             else
             // diff color chain
             {
-                if (chain_liberties[chain_id] < 2)
+                if (chain_liberty_counts[chain_id] < 2)
                 {
                     return false;
                 }

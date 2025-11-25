@@ -136,7 +136,7 @@ void Board::print_board() const
                 break;
             case pointType::BLACK:
             case pointType::WHITE:
-                printf("%3d", chain_liberties[i * (BOARD_SIZE + 2) + j]);
+                printf("%3d", chain_liberty_counts[i * (BOARD_SIZE + 2) + j]);
                 break;
             }
         }
@@ -241,8 +241,11 @@ void Board::check_for_errors() const
             sizes_check[chain_roots[i]]++;
 
             assert(chain_roots[i] != 0);
-            if (chain_liberties[chain_roots[i]] == 0)
+            if (chain_liberty_counts[chain_roots[i]] == 0)
             {
+
+                std::pair<int, int> loc = this->idx_to_coords(i);
+                std::cout << loc.first << " " << loc.second << "\n";
                 assert(false);
             }
             assert(chain_sizes[chain_roots[i]] != 0);
@@ -256,7 +259,6 @@ void Board::check_for_errors() const
                 uint16_t chain_id = chain_roots[i + directions[d]];
                 if (chain_id != 0)
                 {
-
                     bool dupl = false;
                     for (uint16_t x = 0; x < num_past_chains; x++)
                     {
@@ -272,6 +274,7 @@ void Board::check_for_errors() const
                         past_chains[num_past_chains] = chain_id;
                         num_past_chains++;
                         // std::cout << i << " " << chain_roots[i + directions[d]] << '\n';
+                        // assert(chain_liberty_locations[chain_id][i + directions[d]]);
                         liberties_check[chain_roots[i + directions[d]]]++;
                     }
                 }
@@ -281,9 +284,9 @@ void Board::check_for_errors() const
     }
     for (uint16_t i = 0; i < NUM_POINTS; i++)
     {
-        // std::cout << i << " " << liberties_check[i] << " " << chain_liberties[i] << '\n';
+        // std::cout << i << " " << liberties_check[i] << " " << chain_liberty_counts[i] << '\n';
         // std::cout << i << " " << sizes_check[i] << " " << chain_sizes[i] << '\n';
-        if (liberties_check[i] != chain_liberties[i])
+        if (liberties_check[i] != chain_liberty_counts[i])
         {
             assert(false);
         }

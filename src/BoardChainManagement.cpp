@@ -7,7 +7,8 @@
 void Board::create_chain(uint16_t idx)
 {
     chain_roots[idx] = idx;
-    chain_liberties[idx] = get_liberties(idx);
+    chain_liberty_locations[idx].fill(false);
+    chain_liberty_counts[idx] = get_liberties(idx);
     chain_sizes[idx] = 1;
 }
 
@@ -16,7 +17,8 @@ void Board::extend_chain(uint16_t idx, uint16_t adj_stone)
     uint16_t chain_id = chain_roots[adj_stone];
     chain_roots[idx] = chain_id;
     chain_sizes[chain_id]++;
-    chain_liberties[chain_id]--;
+    chain_liberty_locations[chain_id][idx] = false;
+    chain_liberty_counts[chain_id]--;
 
     for (uint16_t i = 0; i < 4; i++)
     {
@@ -39,7 +41,8 @@ void Board::extend_chain(uint16_t idx, uint16_t adj_stone)
             }
             if (!already_counted)
             {
-                chain_liberties[chain_id]++;
+                chain_liberty_locations[chain_id][idx + directions[i]] = true;
+                chain_liberty_counts[chain_id]++;
                 // if a liberty of the new stone doesn't border the chain already then add it for a new liberty
             }
         }
@@ -63,8 +66,11 @@ void Board::merge_chains(std::array<uint16_t, 4> neighbor_roots, uint16_t num_ne
     }
 #endif
 
-    uint16_t new_root = neighbor_roots[0];
-    // pick root of first chain to be root of new merged one
+    uint16_t new_root = idx;
+    // pick new stone to be root of merged chain
+
+    chain_liberty_locations[new_root].fill(false);
+    // clear existing locations arr
 
     uint16_t chain_size = chain_sizes[new_root] + 1;
     // add 1 for new stone
@@ -78,7 +84,7 @@ void Board::merge_chains(std::array<uint16_t, 4> neighbor_roots, uint16_t num_ne
 
     for (uint16_t i = 0; i < num_neighbors; i++)
     {
-        chain_liberties[neighbor_roots[i]] = 0;
+        chain_liberty_counts[neighbor_roots[i]] = 0;
         // update sizes and liberties
     }
     chain_sizes[new_root] = chain_size;
@@ -106,32 +112,33 @@ void Board::merge_chains(std::array<uint16_t, 4> neighbor_roots, uint16_t num_ne
     chain_roots[idx] = new_root;
 
     uint16_t num_liberties = 0;
+
     for (uint16_t i = 0; i < NUM_POINTS; i++)
     {
-        if (board[i] == pointType::EMPTY)
+        if (board[idx] != EMPTY)
         {
-            if (i == idx)
+            continue;
+        }
+
+        for (int neigh = 0; neigh < num_neighbors; neigh++)
+        {
+            if (chain_liberty_locations[neighbor_roots[neigh]][idx])
             {
-                continue;
-            }
-            for (uint16_t j = 0; j < 4; j++)
-            {
-                if (chain_roots[i + directions[j]] == new_root)
-                {
-                    num_liberties++;
-                    break;
-                }
+                chain_liberty_locations[new_root][i] = true;
+                num_liberties++;
             }
         }
     }
 
-    chain_liberties[new_root] = num_liberties;
+    chain_roots[idx] = new_root;
+
+    chain_liberty_counts[new_root] = num_liberties;
 }
 
 void Board::capture_chain(uint16_t chain_root)
 {
 #if DEBUG
-    assert(chain_liberties[chain_root] == 0);
+    assert(chain_liberty_counts[chain_root] == 0);
 #endif
     chain_sizes[chain_root] = 0;
 
@@ -143,7 +150,8 @@ void Board::capture_chain(uint16_t chain_root)
             set_point(i, pointType::EMPTY);
         }
     }
-    chain_liberties[chain_root] = 0;
+
+    chain_liberty_counts[chain_root] = 0;
     // we need this since set point adds liberties to adjacent chains on removal
 }
 
@@ -168,7 +176,7 @@ void Board::update_chains(uint16_t idx)
             uint16_t chain_id = chain_roots[neighbor];
 #if DEBUG
             assert(chain_roots[neighbor] != 0);
-            assert(chain_liberties[chain_roots[neighbor]] != 0);
+            assert(chain_liberty_counts[chain_roots[neighbor]] != 0);
             assert(chain_sizes[chain_roots[neighbor]] != 0);
 #endif
             bool dupl = false;
@@ -187,8 +195,10 @@ void Board::update_chains(uint16_t idx)
                 prev_chains[prev_chain_count] = chain_id;
                 prev_chain_count++;
 
-                chain_liberties[chain_id]--;
-                if (chain_liberties[chain_id] == 0)
+                chain_liberty_locations[chain_id][neighbor] = false;
+
+                chain_liberty_counts[chain_id]--;
+                if (chain_liberty_counts[chain_id] == 0)
                 {
                     capture_chain(chain_id);
                 }

@@ -55,8 +55,10 @@ protected:
 
     std::array<uint16_t, NUM_POINTS> chain_roots{};
     // start of chain list
-    std::array<uint16_t, NUM_POINTS> chain_liberties{}; // only defined for locations that are roots
-    std::array<uint16_t, NUM_POINTS> chain_sizes{};     // also only defined for roots, num stones for chain
+    std::array<uint16_t, NUM_POINTS> chain_liberty_counts{}; // only defined for locations that are roots
+    std::array<std::array<bool, NUM_POINTS>, NUM_POINTS> chain_liberty_locations{};
+    // maps chain_ids to arrays marking all liberty locations
+    std::array<uint16_t, NUM_POINTS> chain_sizes{}; // also only defined for roots, num stones for chain
     std::array<pointType, NUM_POINTS> eyes{};
 
     uint16_t white_count;
