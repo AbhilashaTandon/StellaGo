@@ -4,7 +4,7 @@
 #include <ctime>
 #include <iostream>
 #include <string>
-#include "Agent.h"
+#include "Bot.h"
 #include "SGFFile.h"
 
 int main(int argc, char *argv[])
